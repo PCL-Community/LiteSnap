@@ -1,0 +1,85 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  DOTNET_VERSION: 10.0.x
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+            suffix: .exe
+          - rid: linux-x64
+            os: ubuntu-latest
+            suffix: ""
+          - rid: osx-x64
+            os: macos-latest
+            suffix: ""
+          - rid: osx-arm64
+            os: macos-latest
+            suffix: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish (${{ matrix.rid }})
+        run: |
+          dotnet publish src/LiteSnap.App \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:PublishTrimmed=true \
+            -p:TrimMode=link \
+            -p:DebugSymbols=false \
+            -p:DebugType=None \
+            -p:EnableCompressionInSingleFile=true \
+            -o ./artifacts/${{ matrix.rid }}
+
+      - name: Rename binary
+        shell: bash
+        run: |
+          mv ./artifacts/${{ matrix.rid }}/LiteSnap.App${{ matrix.suffix }} \
+             ./artifacts/${{ matrix.rid }}/LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LiteSnap-${{ github.ref_name }}-${{ matrix.rid }}
+          path: ./artifacts/${{ matrix.rid }}/LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+          if-no-files-found: error
+
+  create-release:
+    needs: [publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: LiteSnap-${{ github.ref_name }}-*
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: LiteSnap ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            LiteSnap-*
