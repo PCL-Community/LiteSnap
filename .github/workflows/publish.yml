@@ -36,6 +36,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish (${{ matrix.rid }})
+        shell: bash
         run: |
           dotnet publish src/LiteSnap.App \
             --configuration Release \
