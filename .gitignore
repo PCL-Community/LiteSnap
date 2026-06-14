@@ -44,6 +44,12 @@ ScaffoldingReadMe.txt
 *~
 CodeCoverage/
 
+# Visual Studio
+.vs/
+
+# CodeGraph reflog
+.cr/
+
 # MSBuild Binary and Structured Log
 *.binlog
 

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LiteSnap.App/LiteSnap.App.csproj" />
+    <Project Path="src/LiteSnap.Core/LiteSnap.Core.csproj" />
+  </Folder>
+</Solution>
