@@ -52,12 +52,14 @@ jobs:
             -o ./artifacts/${{ matrix.rid }}
 
       - name: Package ZIP
-        shell: bash
+        shell: pwsh
         run: |
-          cd ./artifacts/${{ matrix.rid }}
-          mv LiteSnap.App${{ matrix.suffix }} LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
-          zip LiteSnap-${{ github.ref_name }}-${{ matrix.rid }}.zip \
-            LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+          $rid = "${{ matrix.rid }}"
+          $suffix = "${{ matrix.suffix }}"
+          Push-Location ./artifacts/$rid
+          Rename-Item -Path "LiteSnap.App$suffix" -NewName "LiteSnap-$rid$suffix"
+          Compress-Archive -Path "LiteSnap-$rid$suffix" -DestinationPath "LiteSnap-${{ github.ref_name }}-$rid.zip" -CompressionLevel Optimal
+          Pop-Location
 
       - uses: actions/upload-artifact@v4
         with:
