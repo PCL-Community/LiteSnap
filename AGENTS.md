@@ -37,6 +37,19 @@ src/
 - Use `Collection<T>` over `List<T>` for public bindable APIs.
 - SCREAMING_SNAKE for `private const` fields.
 
+## UI / Styling
+
+- **Theme**: `RequestedThemeVariant="Dark"` enforced in `App.axaml`. All brushes use `DynamicResource` or `StaticResource` from `Application.Resources` (PageBackground, CardBackground, ToolbarBackground, AccentBrush).
+- **Toolbar buttons**: Use `Classes="ToolbarButton"` — flat, transparent bg, accent hover.
+- **Card panels**: `Border` with `CornerRadius="8"`, `Background="{StaticResource CardBackgroundBrush}"`, `BorderBrush="{StaticResource SubtleBorderBrush}"`.
+- **Color palette** defined in `App.axaml` `<Application.Resources>`:
+  - `PageBackground` `#1A1A1A`, `CardBackground` `#252525`, `ToolbarBackground` `#2D2D2D`
+  - `AccentColor` `#60CDE0`, `SubtleBorder` `#3D3D3D`
+  - `PrimaryText` `#FFFFFF`, `SecondaryText` `#9A9A9A`, `TertiaryText` `#6B6B6B`
+- **List spacing**: 12px margins, 8px corner radius on cards, 16px inner padding.
+- Avoid inline colors; always define in `App.axaml` resources.
+- Refer to BedrockBoot (OnePointUI.Avalonia) for WinUI3/Fluent design patterns.
+
 ## Key Types
 
 | Type | Location | Purpose |

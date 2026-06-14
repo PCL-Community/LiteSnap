@@ -7,160 +7,158 @@
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="750"
         x:Class="LiteSnap.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+        Background="{StaticResource PageBackgroundBrush}"
         Title="LiteSnap 快照管理器"
         MinWidth="800" MinHeight="500">
 
-    <Grid RowDefinitions="Auto,2,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-        <!-- ══════ Toolbar ══════ -->
-        <Border Grid.Row="0" Padding="8,6" Background="{StaticResource SystemChromeMediumColor}">
-            <DockPanel>
-                <StackPanel Orientation="Horizontal" Spacing="4" DockPanel.Dock="Left">
-                    <Button Command="{Binding OpenFolderCommand}" MinWidth="100" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="📂" FontSize="16"/>
-                            <TextBlock Text="打开文件夹" VerticalAlignment="Center"/>
+        <!-- ══════ CommandBar ══════ -->
+        <Border Grid.Row="0" Background="{StaticResource ToolbarBackgroundBrush}">
+            <DockPanel Margin="8,4">
+                <StackPanel Orientation="Horizontal" Spacing="2" DockPanel.Dock="Left">
+                    <Button Classes="ToolbarButton" Command="{Binding OpenFolderCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📂" FontSize="14"/>
+                            <TextBlock Text="打开" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
-                    <Rectangle Width="1" Fill="{StaticResource SystemBaseMediumLowColor}" Margin="4,2"/>
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
 
-                    <Button Command="{Binding ExportZipCommand}"
-                            IsEnabled="{Binding HasSelection}"
-                            MinWidth="100" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="📦" FontSize="16"/>
-                            <TextBlock Text="导出 ZIP" VerticalAlignment="Center"/>
+                    <Button Classes="ToolbarButton" Command="{Binding ExportZipCommand}"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📦" FontSize="14"/>
+                            <TextBlock Text="导出 ZIP" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Command="{Binding ExportFolderCommand}"
-                            IsEnabled="{Binding HasSelection}"
-                            MinWidth="110" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="📁" FontSize="16"/>
-                            <TextBlock Text="导出文件夹" VerticalAlignment="Center"/>
+                    <Button Classes="ToolbarButton" Command="{Binding ExportFolderCommand}"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="📁" FontSize="14"/>
+                            <TextBlock Text="导出文件夹" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
-                    <Rectangle Width="1" Fill="{StaticResource SystemBaseMediumLowColor}" Margin="4,2"/>
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
 
-                    <Button Command="{Binding ApplyVersionCommand}"
-                            IsEnabled="{Binding HasSelection}"
-                            MinWidth="100" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="↩" FontSize="16"/>
-                            <TextBlock Text="应用备份" VerticalAlignment="Center"/>
+                    <Button Classes="ToolbarButton" Command="{Binding ApplyVersionCommand}"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="↩" FontSize="14"/>
+                            <TextBlock Text="应用" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Command="{Binding CreateVersionCommand}"
-                            IsEnabled="{Binding IsFolderLoaded}"
-                            MinWidth="100" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="➕" FontSize="16"/>
-                            <TextBlock Text="创建备份" VerticalAlignment="Center"/>
+                    <Button Classes="ToolbarButton" Command="{Binding CreateVersionCommand}"
+                            IsEnabled="{Binding IsFolderLoaded}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="➕" FontSize="14"/>
+                            <TextBlock Text="创建" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
-                    <Button Command="{Binding DeleteVersionCommand}"
-                            IsEnabled="{Binding HasSelection}"
-                            MinWidth="100" Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="🗑" FontSize="16"/>
-                            <TextBlock Text="删除备份" VerticalAlignment="Center"/>
+                    <Button Classes="ToolbarButton" Command="{Binding DeleteVersionCommand}"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="🗑" FontSize="14"/>
+                            <TextBlock Text="删除" FontSize="13"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Spacing="8" DockPanel.Dock="Right"
-                            IsVisible="{Binding IsLoading}">
-                    <ProgressBar IsIndeterminate="True" Width="120" Height="14" VerticalAlignment="Center"/>
-                    <TextBlock Text="处理中..." FontSize="12" VerticalAlignment="Center"
-                               Foreground="{StaticResource SystemAccentColor}"/>
+                <StackPanel Orientation="Horizontal" Spacing="10" DockPanel.Dock="Right"
+                            IsVisible="{Binding IsLoading}" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <ProgressBar IsIndeterminate="True" Width="100" Height="3" Background="#3FFFFFFF"
+                                 Foreground="{StaticResource AccentBrush}"/>
+                    <TextBlock Text="处理中..." FontSize="12" Foreground="{StaticResource SecondaryTextBrush}"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- ══════ Separator ══════ -->
-        <Rectangle Grid.Row="1" Fill="{StaticResource SystemAccentColor}" Height="2"/>
-
-        <!-- ══════ Status Bar ══════ -->
-        <Border Grid.Row="3" Padding="12,4" Background="{StaticResource SystemChromeMediumColor}">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12"
-                           VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="2" FontSize="11" VerticalAlignment="Center"
-                           Foreground="{StaticResource SystemBaseMediumColor}">
-                    <Run Text="{Binding Versions.Count}"/>
-                    <Run Text="个快照"/>
-                    <Run Text=" | "/>
-                    <Run Text="{Binding NodeFiles.Count}"/>
-                    <Run Text="个文件"/>
-                </TextBlock>
-            </Grid>
-        </Border>
+        <!-- ══════ Accent Separator ══════ -->
+        <Rectangle Grid.Row="1" Fill="{StaticResource AccentBrush}" Height="2" Opacity="0.8"/>
 
         <!-- ══════ Main Content ══════ -->
-        <Grid Grid.Row="2" ColumnDefinitions="320,*" Margin="0,4,0,0">
+        <Grid Grid.Row="2" ColumnDefinitions="320,*" Margin="0,0,0,0">
 
-            <!-- 左侧: 版本列表 -->
-            <Border Grid.Column="0" Margin="8,4,4,8" CornerRadius="6"
-                    BorderBrush="{StaticResource SystemBaseLowColor}" BorderThickness="1">
+            <!-- ─── 左侧: 版本列表 ─── -->
+            <Border Grid.Column="0" Margin="12,12,6,12" CornerRadius="8"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource SubtleBorderBrush}" BorderThickness="1">
                 <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="快照列表" FontWeight="SemiBold" FontSize="14"
-                               Padding="12,10" Foreground="{StaticResource SystemAccentColor}"/>
+                    <Grid DockPanel.Dock="Top" Margin="16,14,16,8">
+                        <TextBlock Text="快照" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryText}" VerticalAlignment="Center"/>
+                    </Grid>
 
-                    <ListBox ItemsSource="{Binding Versions}"
-                             SelectedItem="{Binding SelectedVersion}"
-                             Background="Transparent" BorderThickness="0">
+                    <ListBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}"
+                             Classes="FlatList" Margin="0,4,0,4">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="models:VersionData">
-                                <Border Padding="10,8" CornerRadius="4" Margin="4,1">
-                                    <StackPanel Spacing="3">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Desc}" FontSize="11"
-                                                   Foreground="{StaticResource SystemBaseMediumColor}"
-                                                   TextTrimming="CharacterEllipsis" MaxLines="1"/>
-                                        <TextBlock Text="{Binding Created, StringFormat='{}{0:G}'}"
-                                                   FontSize="11" Foreground="{StaticResource SystemBaseMediumLowColor}"/>
-                                    </StackPanel>
-                                </Border>
+                                <Grid ColumnDefinitions="3,*" Margin="0,2">
+                                    <Border Classes="AccentBar" CornerRadius="2"
+                                            Width="3" HorizontalAlignment="Stretch"/>
+                                    <Border Grid.Column="1" Padding="12,10" CornerRadius="4">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryText}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Desc}" FontSize="11"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                                       TextTrimming="CharacterEllipsis" MaxLines="1"/>
+                                            <TextBlock Text="{Binding Created, StringFormat='{}{0:G}'}"
+                                                       FontSize="10" Foreground="{StaticResource TertiaryTextBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </DockPanel>
             </Border>
 
-            <!-- 右侧: 文件详情 -->
-            <Border Grid.Column="1" Margin="4,4,8,8" CornerRadius="6"
-                    BorderBrush="{StaticResource SystemBaseLowColor}" BorderThickness="1">
+            <!-- ─── 右侧: 文件详情 ─── -->
+            <Border Grid.Column="1" Margin="6,12,12,12" CornerRadius="8"
+                    Background="{StaticResource CardBackgroundBrush}"
+                    BorderBrush="{StaticResource SubtleBorderBrush}" BorderThickness="1">
                 <DockPanel>
-                    <Border DockPanel.Dock="Top" Padding="12,10"
-                            Background="{StaticResource SystemAccentColor}" CornerRadius="6,6,0,0">
-                        <TextBlock Text="文件详情" FontWeight="SemiBold" FontSize="14" Foreground="White"/>
-                    </Border>
+                    <Grid DockPanel.Dock="Top" Margin="16,14,16,8">
+                        <TextBlock Text="文件" FontSize="16" FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryText}" VerticalAlignment="Center"/>
+                    </Grid>
 
-                    <ListBox ItemsSource="{Binding NodeFiles}"
-                             Background="Transparent" BorderThickness="0">
+                    <ListBox ItemsSource="{Binding NodeFiles}" Classes="FlatList" Margin="0,4,0,4">
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="models:FileVersionObjects">
-                                <Border Padding="8,5" Margin="4,1" CornerRadius="3">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
-                                        <Border Grid.Column="0" Margin="0,0,8,0" Padding="3,1" CornerRadius="3"
-                                                BorderBrush="{StaticResource SystemBaseMediumLowColor}" BorderThickness="1">
-                                            <TextBlock Text="{Binding ObjectType}" FontSize="10"/>
-                                        </Border>
-                                        <TextBlock Grid.Column="1" Text="{Binding Path}"
-                                                   FontSize="12" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Grid.Column="2" Margin="12,0,6,0"
-                                                   Text="{Binding Length, StringFormat='{}{0:N0}'}"
-                                                   FontSize="11" Foreground="{StaticResource SystemBaseMediumColor}"/>
-                                        <TextBlock Grid.Column="3" Text="{Binding Hash}"
-                                                   FontSize="10" Foreground="{StaticResource SystemBaseMediumLowColor}"/>
-                                    </Grid>
-                                </Border>
+                                <Grid ColumnDefinitions="3,*,Auto,Auto" Margin="0,1">
+                                    <Border Classes="AccentBar" CornerRadius="2" VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Stretch"/>
+                                    <Border Grid.Column="1" Padding="10,7" CornerRadius="4">
+                                        <Grid ColumnDefinitions="Auto,Auto,*" VerticalAlignment="Center">
+                                            <Border Padding="5,2" CornerRadius="3"
+                                                    Background="#20FFFFFF" BorderThickness="0" MinWidth="36">
+                                                <TextBlock Text="{Binding ObjectType}" FontSize="10"
+                                                           Foreground="{StaticResource SecondaryTextBrush}"
+                                                           HorizontalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Margin="10,0,0,0"
+                                                       Text="{Binding Path}" FontSize="12"
+                                                       Foreground="{StaticResource PrimaryText}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Grid.Column="2" Margin="0,0,12,0"
+                                               Text="{Binding Length, StringFormat='{}{0:N0}'}"
+                                               FontSize="11" Foreground="{StaticResource SecondaryTextBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Margin="0,0,12,0"
+                                               Text="{Binding Hash}"
+                                               FontSize="10" Foreground="{StaticResource TertiaryTextBrush}"
+                                               VerticalAlignment="Center"/>
+                                </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
@@ -168,6 +166,25 @@
             </Border>
 
         </Grid>
+
+        <!-- ══════ StatusBar ══════ -->
+        <Border Grid.Row="3" Background="{StaticResource ToolbarBackgroundBrush}"
+                BorderThickness="0,1,0,0" BorderBrush="{StaticResource SubtleBorderBrush}">
+            <Grid Margin="14,5,14,5" ColumnDefinitions="Auto,*,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" FontSize="12"
+                           Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" FontSize="12" VerticalAlignment="Center"
+                           Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,16,0"
+                           IsVisible="{Binding IsFolderLoaded}">
+                    <Run Text="{Binding Versions.Count}"/><Run Text=" 个快照"/>
+                </TextBlock>
+                <TextBlock Grid.Column="3" FontSize="12" VerticalAlignment="Center"
+                           Foreground="{StaticResource TertiaryTextBrush}"
+                           IsVisible="{Binding IsFolderLoaded}">
+                    <Run Text="{Binding NodeFiles.Count}"/><Run Text=" 个文件"/>
+                </TextBlock>
+            </Grid>
+        </Border>
 
     </Grid>
 </Window>
