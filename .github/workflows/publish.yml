@@ -51,16 +51,18 @@ jobs:
             -p:EnableCompressionInSingleFile=true \
             -o ./artifacts/${{ matrix.rid }}
 
-      - name: Rename binary
+      - name: Package ZIP
         shell: bash
         run: |
-          mv ./artifacts/${{ matrix.rid }}/LiteSnap.App${{ matrix.suffix }} \
-             ./artifacts/${{ matrix.rid }}/LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+          cd ./artifacts/${{ matrix.rid }}
+          mv LiteSnap.App${{ matrix.suffix }} LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+          zip LiteSnap-${{ github.ref_name }}-${{ matrix.rid }}.zip \
+            LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: LiteSnap-${{ github.ref_name }}-${{ matrix.rid }}
-          path: ./artifacts/${{ matrix.rid }}/LiteSnap-${{ matrix.rid }}${{ matrix.suffix }}
+          path: ./artifacts/${{ matrix.rid }}/LiteSnap-${{ github.ref_name }}-${{ matrix.rid }}.zip
           if-no-files-found: error
 
   create-release:
