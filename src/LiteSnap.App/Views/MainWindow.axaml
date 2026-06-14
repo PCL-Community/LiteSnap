@@ -120,49 +120,109 @@
                 </DockPanel>
             </Border>
 
-            <!-- ─── 右侧: 文件详情 ─── -->
+            <!-- ─── 右侧: 快照详情 + 文件列表 ─── -->
             <Border Grid.Column="1" Margin="6,12,12,12" CornerRadius="8"
                     Background="{StaticResource CardBackgroundBrush}"
                     BorderBrush="{StaticResource SubtleBorderBrush}" BorderThickness="1">
-                <DockPanel>
-                    <Grid DockPanel.Dock="Top" Margin="16,14,16,8">
-                        <TextBlock Text="文件" FontSize="16" FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryText}" VerticalAlignment="Center"/>
-                    </Grid>
+                <Grid RowDefinitions="Auto,*">
+                    <DockPanel Grid.Row="0" Margin="0" IsVisible="{Binding HasSelection}">
 
-                    <ListBox ItemsSource="{Binding NodeFiles}" Classes="FlatList" Margin="0,4,0,4">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:FileVersionObjects">
-                                <Grid ColumnDefinitions="3,*,Auto,Auto" Margin="0,1">
-                                    <Border Classes="AccentBar" CornerRadius="2" VerticalAlignment="Stretch"
-                                            HorizontalAlignment="Stretch"/>
-                                    <Border Grid.Column="1" Padding="10,7" CornerRadius="4">
-                                        <Grid ColumnDefinitions="Auto,Auto,*" VerticalAlignment="Center">
-                                            <Border Padding="5,2" CornerRadius="3"
-                                                    Background="#20FFFFFF" BorderThickness="0" MinWidth="36">
-                                                <TextBlock Text="{Binding ObjectType}" FontSize="10"
+                        <!-- 信息条: 名称 文件数 大小 创建时间 备注 -->
+                        <Border DockPanel.Dock="Top"
+                                Background="{StaticResource ToolbarBackgroundBrush}"
+                                CornerRadius="8,8,0,0" Padding="16,14">
+                            <StackPanel Orientation="Horizontal" Spacing="24">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="名称" FontSize="10"
+                                               Foreground="{StaticResource TertiaryTextBrush}"/>
+                                    <TextBlock Text="{Binding SelectedVersion.Name}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryText}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="文件数" FontSize="10"
+                                               Foreground="{StaticResource TertiaryTextBrush}"/>
+                                    <TextBlock FontSize="14" Foreground="{StaticResource PrimaryText}">
+                                        <Run Text="{Binding FileCount}"/><Run Text=" 个文件"/>
+                                        <Run Text=", "/><Run Text="{Binding FolderCount}"/><Run Text=" 个目录"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="大小" FontSize="10"
+                                               Foreground="{StaticResource TertiaryTextBrush}"/>
+                                    <TextBlock Text="{Binding TotalSizeFormatted}" FontSize="14"
+                                               Foreground="{StaticResource PrimaryText}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="创建时间" FontSize="10"
+                                               Foreground="{StaticResource TertiaryTextBrush}"/>
+                                    <TextBlock Text="{Binding SelectedVersion.Created, StringFormat='{}{0:G}'}"
+                                               FontSize="13" Foreground="{StaticResource PrimaryText}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="备注" FontSize="10"
+                                               Foreground="{StaticResource TertiaryTextBrush}"/>
+                                    <TextBlock Text="{Binding SelectedVersion.Desc}"
+                                               FontSize="13" Foreground="{StaticResource PrimaryText}"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                    </DockPanel>
+
+                    <!-- 文件列表区域 -->
+                    <Grid Grid.Row="1" IsVisible="{Binding HasSelection}"
+                          RowDefinitions="Auto,*" Margin="0">
+
+                        <!-- 列头 -->
+                        <Border Grid.Row="0" BorderBrush="{StaticResource SubtleBorderBrush}"
+                                BorderThickness="0,0,0,1" Padding="16,10,16,8">
+                            <Grid ColumnDefinitions="80,1*,100">
+                                <TextBlock Grid.Column="0" Text="类型" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="1" Text="名称" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SecondaryTextBrush}"/>
+                                <TextBlock Grid.Column="2" Text="大小" FontSize="11" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- 文件行 -->
+                        <ListBox Grid.Row="1" ItemsSource="{Binding NodeFiles}"
+                                 Classes="FlatList" Margin="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:FileVersionObjects">
+                                    <Border BorderBrush="{StaticResource SubtleBorderBrush}"
+                                            BorderThickness="0,0,0,0" Padding="16,8,16,8">
+                                        <Grid ColumnDefinitions="80,1*,100" VerticalAlignment="Center">
+                                            <Border Grid.Column="0" Padding="5,2" CornerRadius="3"
+                                                    Background="#18FFFFFF" BorderThickness="0" MinWidth="50"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding ObjectType}" FontSize="11"
                                                            Foreground="{StaticResource SecondaryTextBrush}"
                                                            HorizontalAlignment="Center"/>
                                             </Border>
-                                            <TextBlock Grid.Column="1" Margin="10,0,0,0"
-                                                       Text="{Binding Path}" FontSize="12"
+                                            <TextBlock Grid.Column="1" Text="{Binding Path}" FontSize="12"
                                                        Foreground="{StaticResource PrimaryText}"
                                                        TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2" FontSize="12"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                                       HorizontalAlignment="Right"
+                                                       Text="{Binding Converter={StaticResource FileSizeConverter}}"/>
                                         </Grid>
                                     </Border>
-                                    <TextBlock Grid.Column="2" Margin="0,0,12,0"
-                                               Text="{Binding Length, StringFormat='{}{0:N0}'}"
-                                               FontSize="11" Foreground="{StaticResource SecondaryTextBrush}"
-                                               VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Margin="0,0,12,0"
-                                               Text="{Binding Hash}"
-                                               FontSize="10" Foreground="{StaticResource TertiaryTextBrush}"
-                                               VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                    </Grid>
+
+                    <!-- 未选择时占位 -->
+                    <TextBlock Grid.Row="1" Text="请选择一个快照" FontSize="16"
+                               Foreground="{StaticResource TertiaryTextBrush}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center"
+                               IsVisible="{Binding HasSelection, Converter={StaticResource InverseBoolConverter}}"/>
+                </Grid>
             </Border>
 
         </Grid>

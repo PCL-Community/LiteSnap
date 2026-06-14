@@ -33,6 +33,15 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasSelection;
 
+    [ObservableProperty]
+    private int _fileCount;
+
+    [ObservableProperty]
+    private int _folderCount;
+
+    [ObservableProperty]
+    private string _totalSizeFormatted = string.Empty;
+
     public ObservableCollection<VersionData> Versions { get; } = [];
     public ObservableCollection<FileVersionObjects> NodeFiles { get; } = [];
 
@@ -103,20 +112,39 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         NodeFiles.Clear();
         HasSelection = value is not null;
+        FileCount = 0;
+        FolderCount = 0;
+        TotalSizeFormatted = string.Empty;
+
         if (value is null || _manager is null) return;
 
         try
         {
             var files = _manager.GetNodeObjects(value.NodeId);
             if (files is not null)
+            {
                 foreach (var f in files.OrderBy(x => x.Path))
                     NodeFiles.Add(f);
+
+                FileCount = files.Count(x => x.ObjectType == ObjectType.File);
+                FolderCount = files.Count(x => x.ObjectType == ObjectType.Directory);
+                var totalBytes = files.Where(x => x.ObjectType == ObjectType.File).Sum(x => x.Length);
+                TotalSizeFormatted = FormatSize(totalBytes);
+            }
         }
         catch (Exception ex)
         {
             StatusMessage = $"加载文件列表失败: {ex.Message}";
         }
     }
+
+    private static string FormatSize(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
+        < 1024 * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
+        _ => $"{bytes / (1024.0 * 1024 * 1024):F2} GB",
+    };
 
     [RelayCommand]
     private async Task ExportZip()
@@ -192,15 +220,6 @@ public partial class MainWindowViewModel : ViewModelBase
         var topLevel = GetTopLevel();
         if (topLevel is null) return;
 
-        // 确认对话框
-        var dialog = new Window
-        {
-            Title = "确认操作",
-            Width = 400,
-            Height = 200,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        };
-
         try
         {
             IsLoading = true;
@@ -230,7 +249,6 @@ public partial class MainWindowViewModel : ViewModelBase
             await Task.Run(() => _manager.CreateVersion());
             StatusMessage = "快照创建成功";
 
-            // 刷新列表
             Versions.Clear();
             var versions = await Task.Run(() => _manager.GetVersions());
             foreach (var v in versions)

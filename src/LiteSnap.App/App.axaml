@@ -2,10 +2,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="LiteSnap.App.App"
              xmlns:local="using:LiteSnap.App"
+             xmlns:conv="using:LiteSnap.App.Converters"
              RequestedThemeVariant="Dark">
 
     <Application.Resources>
         <ResourceDictionary>
+            <!-- ── Converters ── -->
+            <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <conv:FileSizeConverter x:Key="FileSizeConverter"/>
+
             <!-- ── Core Colors ── -->
             <Color x:Key="AccentColor">#60CDE0</Color>
             <Color x:Key="AccentDarkColor">#4DB8CC</Color>
