@@ -20,12 +20,21 @@
                     <!-- ── 打开 ── -->
                     <Button x:Name="OpenMenuButton" Background="Transparent" BorderThickness="0" Padding="10,6">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="📂" FontSize="14"/>
+                            <Path Data="{StaticResource IconFolder}" Fill="{StaticResource PrimaryText}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
                             <TextBlock Text="打开" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
-                                <MenuItem Header="📂 打开文件夹" Command="{Binding OpenFolderCommand}"/>
+                                <MenuItem Command="{Binding OpenFolderCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconFolder}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header>
+                                        <TextBlock>打开文件夹</TextBlock>
+                                    </MenuItem.Header>
+                                </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
@@ -36,24 +45,55 @@
                     <!-- ── 操作 ── -->
                     <Button Background="Transparent" BorderThickness="0" Padding="10,6">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="⚙" FontSize="14"/>
+                            <Path Data="{StaticResource IconWrench}" Fill="{StaticResource PrimaryText}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
                             <TextBlock Text="操作" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
-                                <MenuItem Header="➕ 创建" Command="{Binding CreateVersionCommand}"
-                                          IsEnabled="{Binding IsFolderLoaded}"/>
+                                <MenuItem Command="{Binding CreateVersionCommand}"
+                                          IsEnabled="{Binding IsFolderLoaded}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconPlus}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>创建</TextBlock></MenuItem.Header>
+                                </MenuItem>
                                 <Separator/>
-                                <MenuItem Header="↩ 应用" Command="{Binding ApplyVersionCommand}"
-                                          IsEnabled="{Binding HasSelection}"/>
+                                <MenuItem Command="{Binding ApplyVersionCommand}"
+                                          IsEnabled="{Binding HasSelection}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconAppWindow}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>应用</TextBlock></MenuItem.Header>
+                                </MenuItem>
                                 <Separator/>
-                                <MenuItem Header="📦 导出 ZIP" Command="{Binding ExportZipCommand}"
-                                          IsEnabled="{Binding HasSelection}"/>
-                                <MenuItem Header="📁 导出文件夹" Command="{Binding ExportFolderCommand}"
-                                          IsEnabled="{Binding HasSelection}"/>
+                                <MenuItem Command="{Binding ExportZipCommand}"
+                                          IsEnabled="{Binding HasSelection}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconExport}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>导出 ZIP</TextBlock></MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding ExportFolderCommand}"
+                                          IsEnabled="{Binding HasSelection}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconFolder}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>导出文件夹</TextBlock></MenuItem.Header>
+                                </MenuItem>
                                 <Separator/>
-                                <MenuItem Header="🗑 删除" Command="{Binding DeleteVersionCommand}"
-                                          IsEnabled="{Binding HasSelection}"/>
+                                <MenuItem Command="{Binding DeleteVersionCommand}"
+                                          IsEnabled="{Binding HasSelection}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconDelete}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>删除</TextBlock></MenuItem.Header>
+                                </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
@@ -64,14 +104,33 @@
                     <!-- ── 关于 ── -->
                     <Button Background="Transparent" BorderThickness="0" Padding="10,6">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="ⓘ" FontSize="14"/>
+                            <Path Data="{StaticResource IconInfo}" Fill="{StaticResource PrimaryText}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
                             <TextBlock Text="关于" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
-                                <MenuItem Header="🔄 检查更新" Command="{Binding CheckUpdatesCommand}"/>
-                                <MenuItem Header="📄 开源许可" Command="{Binding OpenLicenseCommand}"/>
-                                <MenuItem Header="ℹ️ 软件信息" Command="{Binding SoftwareInfoCommand}"/>
+                                <MenuItem Command="{Binding CheckUpdatesCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconRefresh}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>检查更新</TextBlock></MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding OpenLicenseCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconCertificate}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>开源许可</TextBlock></MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SoftwareInfoCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconInfo}" Fill="{StaticResource PrimaryText}"
+                                              Width="16" Height="16" Stretch="Uniform"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header><TextBlock>软件信息</TextBlock></MenuItem.Header>
+                                </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
                     </Button>
@@ -186,7 +245,8 @@
                                     Foreground="White" Padding="12,5" CornerRadius="4"
                                     Command="{Binding ApplyVersionCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="↩" FontSize="12"/>
+                                    <Path Data="{StaticResource IconAppWindow}" Fill="White"
+                                          Width="14" Height="14" Stretch="Uniform"/>
                                     <TextBlock Text="应用" FontSize="12"/>
                                 </StackPanel>
                             </Button>
@@ -194,23 +254,26 @@
                                     Foreground="White" Padding="12,5" CornerRadius="4"
                                     Command="{Binding ExportZipCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="📦" FontSize="12"/>
-                                    <TextBlock Text="导出 ZIP" FontSize="12"/>
+                                    <Path Data="{StaticResource IconExport}" Fill="White"
+                                          Width="14" Height="14" Stretch="Uniform"/>
+                                    <TextBlock Text="ZIP" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Background="#3FFFFFFF" BorderThickness="0"
                                     Foreground="White" Padding="12,5" CornerRadius="4"
                                     Command="{Binding ExportFolderCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="📁" FontSize="12"/>
-                                    <TextBlock Text="导出文件夹" FontSize="12"/>
+                                    <Path Data="{StaticResource IconFolder}" Fill="White"
+                                          Width="14" Height="14" Stretch="Uniform"/>
+                                    <TextBlock Text="文件夹" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Background="#44CC6666" BorderThickness="0"
                                     Foreground="White" Padding="12,5" CornerRadius="4"
                                     Command="{Binding DeleteVersionCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <TextBlock Text="🗑" FontSize="12"/>
+                                    <Path Data="{StaticResource IconDelete}" Fill="White"
+                                          Width="14" Height="14" Stretch="Uniform"/>
                                     <TextBlock Text="删除" FontSize="12"/>
                                 </StackPanel>
                             </Button>

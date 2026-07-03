@@ -1,8 +1,9 @@
 using System;
-using System.IO;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
-using CommunityToolkit.Mvvm.Input;
+using Avalonia.Controls.Shapes;
+using Avalonia.Media;
 using LiteSnap.App.ViewModels;
 
 namespace LiteSnap.App.Views;
@@ -41,12 +42,22 @@ public partial class MainWindow : Window
 
         foreach (var path in vm.RecentFolders)
         {
-            flyout.Items.Add(new MenuItem
+            var item = new MenuItem
             {
-                Header = $"📁 {path}",
                 Command = vm.OpenRecentFolderCommand,
                 CommandParameter = path,
-            });
+            };
+            var icon = new Path
+            {
+                Data = (Geometry?)Application.Current?.FindResource("IconFolder"),
+                Fill = Brushes.White,
+                Width = 16,
+                Height = 16,
+                Stretch = Stretch.Uniform,
+            };
+            item.Icon = icon;
+            item.Header = new TextBlock { Text = path };
+            flyout.Items.Add(item);
         }
     }
 }
