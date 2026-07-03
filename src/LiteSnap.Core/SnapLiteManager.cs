@@ -226,7 +226,8 @@ public class SnapLiteManager : IDisposable
         foreach (var del in toDelete.OrderByDescending(x => x.Path.Count(c => c == Path.DirectorySeparatorChar))
                      .ThenBy(x => (int)x.ObjectType))
         {
-            var fullPath = Path.Combine(_rootPath, del.Path);
+            var fullPath = SafeResolvePath(del.Path);
+            if (fullPath is null) continue;
             if (del.ObjectType == ObjectType.File && File.Exists(fullPath))
                 File.Delete(fullPath);
             else if (del.ObjectType == ObjectType.Directory && Directory.Exists(fullPath))
@@ -235,7 +236,8 @@ public class SnapLiteManager : IDisposable
 
         foreach (var add in toAdd.OrderBy(x => (int)x.ObjectType))
         {
-            var fullPath = Path.Combine(_rootPath, add.Path);
+            var fullPath = SafeResolvePath(add.Path);
+            if (fullPath is null) continue;
             if (add.ObjectType == ObjectType.Directory)
             {
                 Directory.CreateDirectory(fullPath);
@@ -255,7 +257,8 @@ public class SnapLiteManager : IDisposable
 
         foreach (var upd in toUpdate)
         {
-            var fullPath = Path.Combine(_rootPath, upd.Path);
+            var fullPath = SafeResolvePath(upd.Path);
+            if (fullPath is null) continue;
             if (File.Exists(fullPath) || Directory.Exists(fullPath))
             {
                 File.SetCreationTime(fullPath, upd.CreationTime);
@@ -338,9 +341,73 @@ public class SnapLiteManager : IDisposable
         }
     }
 
+    // ── Tree ──
+
+    public List<FileTreeNode> GetFileTree(string nodeId)
+    {
+        var files = GetNodeObjects(nodeId);
+        if (files is null) return [];
+
+        var roots = new List<FileTreeNode>();
+        var dirs = new Dictionary<string, FileTreeNode>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var f in files.OrderBy(x => x.Path))
+        {
+            var segments = f.Path.Split('/', '\\');
+            var currentPath = "";
+
+            for (int i = 0; i < segments.Length - 1; i++)
+            {
+                var parentPath = currentPath;
+                currentPath = currentPath.Length == 0 ? segments[i] : currentPath + "/" + segments[i];
+                if (!dirs.ContainsKey(currentPath))
+                {
+                    var node = new FileTreeNode
+                    {
+                        Name = segments[i],
+                        FullPath = currentPath,
+                        IsDirectory = true,
+                    };
+                    dirs[currentPath] = node;
+                    if (parentPath.Length == 0)
+                        roots.Add(node);
+                    else if (dirs.TryGetValue(parentPath, out var parent))
+                        parent.Children.Add(node);
+                }
+            }
+
+            var node2 = new FileTreeNode
+            {
+                Name = segments[^1],
+                FullPath = f.Path,
+                IsDirectory = f.ObjectType == ObjectType.Directory,
+                Length = f.Length,
+            };
+            if (segments.Length == 1)
+                roots.Add(node2);
+            else
+            {
+                var parentDir = string.Join("/", segments[..^1]);
+                if (dirs.TryGetValue(parentDir, out var parent2))
+                    parent2.Children.Add(node2);
+            }
+        }
+
+        return roots;
+    }
+
     // ── Internal ──
 
     private static string GetNodeTableName(string nodeId) => $"node_{nodeId}";
+
+    private string? SafeResolvePath(string relativePath)
+    {
+        var full = Path.GetFullPath(Path.Combine(_rootPath, relativePath));
+        var root = Path.GetFullPath(_rootPath);
+        if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            return null;
+        return full;
+    }
 
     public void Dispose()
     {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
@@ -51,7 +52,6 @@ public partial class MainWindowViewModel : ViewModelBase
     private string _totalSizeFormatted = string.Empty;
 
     public ObservableCollection<VersionData> Versions { get; } = [];
-    public ObservableCollection<FileVersionObjects> NodeFiles { get; } = [];
     public ObservableCollection<FileTreeNode> FileTreeRoot { get; } = [];
     public ObservableCollection<string> RecentFolders { get; } = [];
 
@@ -129,7 +129,6 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         IsLoading = true;
         Versions.Clear();
-        NodeFiles.Clear();
         FileTreeRoot.Clear();
         SelectedVersion = null;
         HasSelection = false;
@@ -182,7 +181,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     partial void OnSelectedVersionChanged(VersionData? value)
     {
-        NodeFiles.Clear();
         FileTreeRoot.Clear();
         HasSelection = value is not null;
         FileCount = 0;
@@ -196,57 +194,13 @@ public partial class MainWindowViewModel : ViewModelBase
             var files = _manager.GetNodeObjects(value.NodeId);
             if (files is null) return;
 
-            foreach (var f in files.OrderBy(x => x.Path))
-                NodeFiles.Add(f);
-
             FileCount = files.Count(x => x.ObjectType == ObjectType.File);
             FolderCount = files.Count(x => x.ObjectType == ObjectType.Directory);
-            var totalBytes = files.Where(x => x.ObjectType == ObjectType.File).Sum(x => x.Length);
-            TotalSizeFormatted = FormatSize(totalBytes);
+            TotalSizeFormatted = FormatSize(files.Where(x => x.ObjectType == ObjectType.File).Sum(x => x.Length));
 
-            // Build tree
-            var dirs = new Dictionary<string, FileTreeNode>(StringComparer.OrdinalIgnoreCase);
-            foreach (var f in files.OrderBy(x => x.Path))
-            {
-                var segments = f.Path.Split('/', '\\');
-                var currentPath = "";
-
-                for (int i = 0; i < segments.Length - 1; i++)
-                {
-                    var parentPath = currentPath;
-                    currentPath = currentPath.Length == 0 ? segments[i] : currentPath + "/" + segments[i];
-                    if (!dirs.ContainsKey(currentPath))
-                    {
-                        var node = new FileTreeNode
-                        {
-                            Name = segments[i],
-                            FullPath = currentPath,
-                            IsDirectory = true,
-                        };
-                        dirs[currentPath] = node;
-                        if (parentPath.Length == 0)
-                            FileTreeRoot.Add(node);
-                        else if (dirs.TryGetValue(parentPath, out var parent))
-                            parent.Children.Add(node);
-                    }
-                }
-
-                var node2 = new FileTreeNode
-                {
-                    Name = segments[^1],
-                    FullPath = f.Path,
-                    IsDirectory = f.ObjectType == ObjectType.Directory,
-                    Length = f.Length,
-                };
-                if (segments.Length == 1)
-                    FileTreeRoot.Add(node2);
-                else
-                {
-                    var parentDir = string.Join("/", segments[..^1]);
-                    if (dirs.TryGetValue(parentDir, out var parent2))
-                        parent2.Children.Add(node2);
-                }
-            }
+            var tree = _manager.GetFileTree(value.NodeId);
+            foreach (var node in tree)
+                FileTreeRoot.Add(node);
         }
         catch (Exception ex)
         {
@@ -499,6 +453,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task CheckUpdates()
     {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         var spinner = new ProgressBar
         {
             IsIndeterminate = true,
@@ -520,14 +475,14 @@ public partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            var latest = await FetchLatestVersionAsync();
+            var latest = await FetchLatestVersionAsync(cts.Token);
             var cur = CurrentVersion;
 
             if (latest is null)
             {
                 resultPanel.Children[1] = new TextBlock { Text = "检查失败，无法连接到 GitHub。", FontSize = 12 };
             }
-            else if (string.Compare(latest, cur, StringComparison.OrdinalIgnoreCase) > 0)
+            else if (Version.TryParse(latest, out var latestV) && Version.TryParse(cur, out var curV) && latestV > curV)
             {
                 resultPanel.Children.Clear();
                 resultPanel.Children.Add(new TextBlock { Text = $"发现新版本：v{latest}", FontSize = 14, FontWeight = Avalonia.Media.FontWeight.SemiBold });
@@ -542,6 +497,10 @@ public partial class MainWindowViewModel : ViewModelBase
                 resultPanel.Children.Add(new TextBlock { Text = "已是最新版本。", FontSize = 14 });
                 resultPanel.Children.Add(new TextBlock { Text = $"v{cur}", FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
             }
+        }
+        catch (OperationCanceledException)
+        {
+            resultPanel.Children[1] = new TextBlock { Text = "检查超时，请稍后重试。", FontSize = 12 };
         }
         catch
         {
@@ -558,9 +517,9 @@ public partial class MainWindowViewModel : ViewModelBase
         await OpenUrl("https://github.com/PCL-Community/LiteSnap/blob/main/LICENSE");
     }
 
-    private static async Task<string?> FetchLatestVersionAsync()
+    private static async Task<string?> FetchLatestVersionAsync(CancellationToken ct = default)
     {
-        var response = await _httpClient.GetAsync("repos/PCL-Community/LiteSnap/releases/latest");
+        var response = await _httpClient.GetAsync("repos/PCL-Community/LiteSnap/releases/latest", ct);
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);
@@ -589,12 +548,4 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 }
 
-public class FileTreeNode
-{
-    public string Name { get; set; } = string.Empty;
-    public string FullPath { get; set; } = string.Empty;
-    public bool IsDirectory { get; set; }
-    public long Length { get; set; }
-    public ObservableCollection<FileTreeNode> Children { get; set; } = [];
-    public bool IsExpanded { get; set; } = true;
-}
+

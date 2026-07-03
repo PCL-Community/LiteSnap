@@ -42,6 +42,7 @@ public partial class MainWindow : Window
 
         foreach (var path in vm.RecentFolders)
         {
+            var name = System.IO.Path.GetDirectoryName(path) ?? path;
             var item = new MenuItem
             {
                 Command = vm.OpenRecentFolderCommand,
@@ -56,7 +57,8 @@ public partial class MainWindow : Window
                 Stretch = Stretch.Uniform,
             };
             item.Icon = icon;
-            item.Header = new TextBlock { Text = path };
+            item.Header = new TextBlock { Text = name };
+            ToolTip.SetTip(item, path);
             flyout.Items.Add(item);
         }
     }
