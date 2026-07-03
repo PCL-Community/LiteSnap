@@ -17,6 +17,7 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
+using LiteSnap.App.Services;
 using LiteSnap.Core;
 using LiteSnap.Core.Models;
 
@@ -24,6 +25,8 @@ namespace LiteSnap.App.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private static LanguageManager Lang => LanguageManager.Instance;
+
     [ObservableProperty]
     private string _selectedFolderPath = string.Empty;
 
@@ -31,7 +34,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private VersionData? _selectedVersion;
 
     [ObservableProperty]
-    private string _statusMessage = "就绪";
+    private string _statusMessage = "";
 
     [ObservableProperty]
     private bool _isLoading;
@@ -59,6 +62,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        _statusMessage = Lang["Status.Ready"];
         OnPropertyChanged(nameof(IsFolderLoaded));
         LoadHistory();
     }
@@ -109,7 +113,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "选择包含 .litesnap 目录的文件夹",
+            Title = Lang["FolderPicker.Title"],
             AllowMultiple = false,
         });
 
@@ -118,7 +122,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var path = folders[0].Path.LocalPath;
         if (!SnapLiteManager.IsSnapLiteFolder(path))
         {
-            StatusMessage = "所选文件夹不包含有效的 .litesnap 数据";
+            StatusMessage = Lang["FolderPicker.Invalid"];
             return;
         }
 
@@ -145,7 +149,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 Versions.Add(v);
 
             IsFolderLoaded = true;
-            StatusMessage = $"已加载 {Versions.Count} 个快照版本";
+            StatusMessage = Lang.Format("FolderPicker.Loaded", Versions.Count);
 
             RecentFolders.Remove(path);
             RecentFolders.Insert(0, path);
@@ -156,7 +160,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            StatusMessage = $"加载失败: {ex.Message}";
+            StatusMessage = Lang.Format("FolderPicker.LoadFailed", ex.Message);
         }
         finally
         {
@@ -170,7 +174,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(path)) return;
         if (!SnapLiteManager.IsSnapLiteFolder(path))
         {
-            StatusMessage = "所选文件夹不包含有效的 .litesnap 数据";
+            StatusMessage = Lang["FolderPicker.Invalid"];
             RecentFolders.Remove(path);
             OnPropertyChanged(nameof(HasRecentFolders));
             SaveHistory();
@@ -204,7 +208,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            StatusMessage = $"加载文件列表失败: {ex.Message}";
+            StatusMessage = Lang.Format("FolderPicker.FileListFailed", ex.Message);
         }
     }
 
@@ -225,12 +229,12 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "导出为 ZIP",
+            Title = Lang["Export.SaveDialogTitle"],
             SuggestedFileName = $"{SelectedVersion.Name}.zip",
             DefaultExtension = "zip",
             FileTypeChoices =
             [
-                new FilePickerFileType("ZIP 文件") { Patterns = ["*.zip"] },
+                new FilePickerFileType(Lang["Export.ZipFileType"]) { Patterns = ["*.zip"] },
             ],
         });
         if (file is null) return;
@@ -238,13 +242,13 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             IsLoading = true;
-            StatusMessage = "正在导出 ZIP...";
+            StatusMessage = Lang["Export.ExportingZip"];
             await Task.Run(() => _manager.ExportToZip(SelectedVersion.NodeId, file.Path.LocalPath));
-            StatusMessage = $"已导出到: {file.Path.LocalPath}";
+            StatusMessage = Lang.Format("Export.Exported", file.Path.LocalPath);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"导出失败: {ex.Message}";
+            StatusMessage = Lang.Format("Export.Failed", ex.Message);
         }
         finally
         {
@@ -261,7 +265,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "选择导出目标文件夹",
+            Title = Lang["Export.FolderPickerTitle"],
             AllowMultiple = false,
         });
         if (folders.Count == 0) return;
@@ -269,13 +273,13 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             IsLoading = true;
-            StatusMessage = "正在导出...";
+            StatusMessage = Lang["Export.Exporting"];
             await Task.Run(() => _manager.ExportToFolder(SelectedVersion.NodeId, folders[0].Path.LocalPath));
-            StatusMessage = $"已导出到: {folders[0].Path.LocalPath}";
+            StatusMessage = Lang.Format("Export.Exported", folders[0].Path.LocalPath);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"导出失败: {ex.Message}";
+            StatusMessage = Lang.Format("Export.Failed", ex.Message);
         }
         finally
         {
@@ -293,13 +297,13 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             IsLoading = true;
-            StatusMessage = "正在应用快照...";
+            StatusMessage = Lang["Snapshot.Applying"];
             await Task.Run(() => _manager.ApplyVersion(SelectedVersion.NodeId));
-            StatusMessage = "快照已应用";
+            StatusMessage = Lang["Snapshot.Applied"];
         }
         catch (Exception ex)
         {
-            StatusMessage = $"应用快照失败: {ex.Message}";
+            StatusMessage = Lang.Format("Snapshot.ApplyFailed", ex.Message);
         }
         finally
         {
@@ -319,25 +323,25 @@ public partial class MainWindowViewModel : ViewModelBase
         };
         var descBox = new TextBox
         {
-            PlaceholderText = "由 LiteSnap 创建的备份",
+            PlaceholderText = Lang["App.DefaultDesc"],
             AcceptsReturn = true,
             MaxHeight = 80,
         };
 
         var dialog = new FAContentDialog
         {
-            Title = "创建快照",
-            PrimaryButtonText = "创建",
-            CloseButtonText = "取消",
+            Title = Lang["Dialog.CreateSnapshot"],
+            PrimaryButtonText = Lang["Dialog.Create"],
+            CloseButtonText = Lang["Dialog.Cancel"],
             DefaultButton = FAContentDialogButton.Primary,
             Content = new StackPanel
             {
                 Spacing = 12,
                 Children =
                 {
-                    new TextBlock { Text = "名称", FontSize = 12 },
+                    new TextBlock { Text = Lang["Dialog.Name"], FontSize = 12 },
                     nameBox,
-                    new TextBlock { Text = "描述", FontSize = 12 },
+                    new TextBlock { Text = Lang["Dialog.Description"], FontSize = 12 },
                     descBox,
                 },
             },
@@ -349,15 +353,15 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             IsLoading = true;
-            StatusMessage = "正在创建快照...";
+            StatusMessage = Lang["Snapshot.Creating"];
             var name = string.IsNullOrWhiteSpace(nameBox.Text)
                 ? now.ToString("yyyy/MM/dd-HH:mm:ss")
                 : nameBox.Text.Trim();
             var desc = string.IsNullOrWhiteSpace(descBox.Text)
-                ? "由 LiteSnap 创建的备份"
+                ? Lang["App.DefaultDesc"]
                 : descBox.Text.Trim();
             await Task.Run(() => _manager.CreateVersion(name, desc));
-            StatusMessage = "快照创建成功";
+            StatusMessage = Lang["Snapshot.Created"];
 
             Versions.Clear();
             var versions = await Task.Run(() => _manager.GetVersions());
@@ -366,7 +370,7 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            StatusMessage = $"创建快照失败: {ex.Message}";
+            StatusMessage = Lang.Format("Snapshot.CreateFailed", ex.Message);
         }
         finally
         {
@@ -381,10 +385,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
         var dialog = new FAContentDialog
         {
-            Title = "确认删除",
-            Content = $"确定要删除快照 \"{SelectedVersion.Name}\" 吗？此操作不可撤销。",
-            PrimaryButtonText = "删除",
-            CloseButtonText = "取消",
+            Title = Lang["Dialog.ConfirmDelete"],
+            Content = Lang.Format("Dialog.DeleteConfirmBody", SelectedVersion.Name),
+            PrimaryButtonText = Lang["Dialog.Delete"],
+            CloseButtonText = Lang["Dialog.Cancel"],
             DefaultButton = FAContentDialogButton.Close,
             IsPrimaryButtonEnabled = true,
         };
@@ -395,22 +399,31 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             IsLoading = true;
-            StatusMessage = "正在删除快照...";
+            StatusMessage = Lang["Snapshot.Deleting"];
             await Task.Run(() => _manager.DeleteVersion(SelectedVersion.NodeId));
-            StatusMessage = "快照已删除";
+            StatusMessage = Lang["Snapshot.Deleted"];
 
             Versions.Remove(SelectedVersion);
             SelectedVersion = null;
         }
         catch (Exception ex)
         {
-            StatusMessage = $"删除快照失败: {ex.Message}";
+            StatusMessage = Lang.Format("Snapshot.DeleteFailed", ex.Message);
         }
         finally
         {
             IsLoading = false;
         }
     }
+
+    [RelayCommand]
+    private void SetLanguageAuto() => LanguageManager.Instance.CurrentSetting = "auto";
+
+    [RelayCommand]
+    private void SetLanguageZh() => LanguageManager.Instance.CurrentSetting = "zh";
+
+    [RelayCommand]
+    private void SetLanguageEn() => LanguageManager.Instance.CurrentSetting = "en";
 
     private static readonly HttpClient _httpClient = new()
     {
@@ -433,19 +446,19 @@ public partial class MainWindowViewModel : ViewModelBase
         var ver = CurrentVersion;
         await new FAContentDialog
         {
-            Title = "软件信息",
+            Title = Lang["Dialog.SoftwareInfo"],
             Content = new StackPanel
             {
                 Spacing = 8,
                 Children =
                 {
-                    new TextBlock { Text = "LiteSnap", FontSize = 20, FontWeight = Avalonia.Media.FontWeight.SemiBold },
-                    new TextBlock { Text = $"版本 v{ver}", FontSize = 13 },
-                    new TextBlock { Text = "快照备份管理器 —— 为 Minecraft 存档及任意文件夹提供文件级快照备份。", FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
-                    new TextBlock { Text = "基于 SHA-512 内容寻址存储 + LiteDB 索引。", FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
+                    new TextBlock { Text = Lang["App.Name"], FontSize = 20, FontWeight = Avalonia.Media.FontWeight.SemiBold },
+                    new TextBlock { Text = Lang.Format("App.Version", ver), FontSize = 13 },
+                    new TextBlock { Text = Lang["App.Description"], FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
+                    new TextBlock { Text = Lang["App.TechStack"], FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
                 },
             },
-            PrimaryButtonText = "确定",
+            PrimaryButtonText = Lang["Dialog.OK"],
             DefaultButton = FAContentDialogButton.Primary,
         }.ShowAsync();
     }
@@ -460,14 +473,14 @@ public partial class MainWindowViewModel : ViewModelBase
             Height = 4,
             Margin = new Avalonia.Thickness(0, 4),
         };
-        var statusText = new TextBlock { Text = "正在检查最新版本...", FontSize = 12 };
+        var statusText = new TextBlock { Text = Lang["Update.Checking"], FontSize = 12 };
         var resultPanel = new StackPanel { Spacing = 10, Children = { spinner, statusText } };
 
         var dialog = new FAContentDialog
         {
-            Title = "检查更新",
+            Title = Lang["Update.CheckUpdates"],
             Content = resultPanel,
-            PrimaryButtonText = "确定",
+            PrimaryButtonText = Lang["Dialog.OK"],
             DefaultButton = FAContentDialogButton.Primary,
         };
 
@@ -480,34 +493,34 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (latest is null)
             {
-                resultPanel.Children[1] = new TextBlock { Text = "检查失败，无法连接到 GitHub。", FontSize = 12 };
+                resultPanel.Children[1] = new TextBlock { Text = Lang["Update.CheckFailed"], FontSize = 12 };
             }
             else if (Version.TryParse(latest, out var latestV) && Version.TryParse(cur, out var curV) && latestV > curV)
             {
                 resultPanel.Children.Clear();
-                resultPanel.Children.Add(new TextBlock { Text = $"发现新版本：v{latest}", FontSize = 14, FontWeight = Avalonia.Media.FontWeight.SemiBold });
-                resultPanel.Children.Add(new TextBlock { Text = $"当前版本：v{cur}", FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
+                resultPanel.Children.Add(new TextBlock { Text = Lang.Format("Update.NewVersion", latest), FontSize = 14, FontWeight = Avalonia.Media.FontWeight.SemiBold });
+                resultPanel.Children.Add(new TextBlock { Text = Lang.Format("Update.CurrentVersion", cur), FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
                 resultPanel.Spacing = 6;
-                dialog.PrimaryButtonText = "跳转下载";
-                dialog.CloseButtonText = "取消";
+                dialog.PrimaryButtonText = Lang["Update.JumpDownload"];
+                dialog.CloseButtonText = Lang["Dialog.Cancel"];
             }
             else
             {
                 resultPanel.Children.Clear();
-                resultPanel.Children.Add(new TextBlock { Text = "已是最新版本。", FontSize = 14 });
+                resultPanel.Children.Add(new TextBlock { Text = Lang["Update.UpToDate"], FontSize = 14 });
                 resultPanel.Children.Add(new TextBlock { Text = $"v{cur}", FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
             }
         }
         catch (OperationCanceledException)
         {
-            resultPanel.Children[1] = new TextBlock { Text = "检查超时，请稍后重试。", FontSize = 12 };
+            resultPanel.Children[1] = new TextBlock { Text = Lang["Update.Timeout"], FontSize = 12 };
         }
         catch
         {
-            resultPanel.Children[1] = new TextBlock { Text = "检查失败，请检查网络连接。", FontSize = 12 };
+            resultPanel.Children[1] = new TextBlock { Text = Lang["Update.Failed"], FontSize = 12 };
         }
 
-        if (await showTask == FAContentDialogResult.Primary && dialog.PrimaryButtonText == "跳转下载")
+        if (await showTask == FAContentDialogResult.Primary && dialog.PrimaryButtonText == Lang["Update.JumpDownload"])
             await OpenUrl("https://github.com/PCL-Community/LiteSnap/releases");
     }
 

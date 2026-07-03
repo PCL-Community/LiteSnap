@@ -27,9 +27,9 @@ public class SnapLiteManager : IDisposable
         var objFolder = Path.Combine(configDir, ObjectsFolderName);
 
         if (!Directory.Exists(configDir))
-            throw new DirectoryNotFoundException($"未找到 SnapLite 配置目录: {configDir}");
+            throw new DirectoryNotFoundException($"SnapLite config directory not found: {configDir}");
         if (!File.Exists(dbFile))
-            throw new FileNotFoundException($"未找到 SnapLite 数据库文件: {dbFile}");
+            throw new FileNotFoundException($"SnapLite database not found: {dbFile}");
         if (!Directory.Exists(objFolder))
             Directory.CreateDirectory(objFolder);
 
@@ -193,7 +193,7 @@ public class SnapLiteManager : IDisposable
     public async Task ApplyVersion(string nodeId)
     {
         var applyObjects = GetNodeObjects(nodeId)
-            ?? throw new InvalidOperationException("无法获取记录");
+            ?? throw new InvalidOperationException("Failed to get records");
         var currentObjects = await ScanAllFilesAsync();
         var curDict = currentObjects.ToDictionary(x => x.Path);
 
@@ -247,7 +247,7 @@ public class SnapLiteManager : IDisposable
                 var dir = Path.GetDirectoryName(fullPath)!;
                 Directory.CreateDirectory(dir);
                 using var source = GetObjectContent(add.Hash)
-                    ?? throw new InvalidOperationException($"无法找到存储的文件: {add.Hash}");
+                    ?? throw new InvalidOperationException($"Storage file not found: {add.Hash}");
                 using var dest = File.Create(fullPath);
                 await source.CopyToAsync(dest);
             }
@@ -281,7 +281,7 @@ public class SnapLiteManager : IDisposable
     public void ExportToZip(string nodeId, string saveFilePath)
     {
         var fileObjects = GetNodeObjects(nodeId)
-            ?? throw new InvalidOperationException("获取记录失败");
+            ?? throw new InvalidOperationException("Failed to get records");
         if (File.Exists(saveFilePath))
             File.Delete(saveFilePath);
 
@@ -298,7 +298,7 @@ public class SnapLiteManager : IDisposable
                     entry.LastWriteTime = fileObject.LastWriteTime;
                     using var writer = entry.Open();
                     using var reader = GetObjectContent(fileObject.Hash)
-                        ?? throw new InvalidOperationException($"无法找到存储的文件: {fileObject.Hash}");
+                        ?? throw new InvalidOperationException($"Storage file not found: {fileObject.Hash}");
                     reader.CopyTo(writer);
                     break;
                 }
@@ -315,7 +315,7 @@ public class SnapLiteManager : IDisposable
     public void ExportToFolder(string nodeId, string destFolderPath)
     {
         var fileObjects = GetNodeObjects(nodeId)
-            ?? throw new InvalidOperationException("获取记录失败");
+            ?? throw new InvalidOperationException("Failed to get records");
 
         foreach (var fileObject in fileObjects.OrderByDescending(x => (int)x.ObjectType))
         {
@@ -330,7 +330,7 @@ public class SnapLiteManager : IDisposable
                     var dir = Path.GetDirectoryName(fullPath)!;
                     Directory.CreateDirectory(dir);
                     using var source = GetObjectContent(fileObject.Hash)
-                        ?? throw new InvalidOperationException($"无法找到存储的文件: {fileObject.Hash}");
+                        ?? throw new InvalidOperationException($"Storage file not found: {fileObject.Hash}");
                     using var dest = File.Create(fullPath);
                     source.CopyTo(dest);
                     File.SetCreationTime(fullPath, fileObject.CreationTime);

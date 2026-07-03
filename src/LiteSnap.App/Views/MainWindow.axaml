@@ -2,13 +2,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:LiteSnap.App.ViewModels"
         xmlns:models="using:LiteSnap.Core.Models"
+        xmlns:local="using:LiteSnap.App"
+        xmlns:services="using:LiteSnap.App.Services"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="750"
         x:Class="LiteSnap.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Background="{StaticResource PageBackgroundBrush}"
-        Title="LiteSnap 快照管理器"
+        Title="{local:Language Key=App.Title}"
         MinWidth="800" MinHeight="500">
 
     <Grid RowDefinitions="Auto,Auto,*,Auto">
@@ -22,7 +24,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <Path Data="{StaticResource IconFolder}" Fill="{StaticResource PrimaryText}"
                                   Width="16" Height="16" Stretch="Uniform"/>
-                            <TextBlock Text="打开" FontSize="12"/>
+                            <TextBlock Text="{local:Language Key=Menu.Open}" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
@@ -32,7 +34,7 @@
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
                                     <MenuItem.Header>
-                                        <TextBlock>打开文件夹</TextBlock>
+                                        <TextBlock Text="{local:Language Key=Menu.OpenFolder}"/>
                                     </MenuItem.Header>
                                 </MenuItem>
                             </MenuFlyout>
@@ -47,7 +49,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <Path Data="{StaticResource IconWrench}" Fill="{StaticResource PrimaryText}"
                                   Width="16" Height="16" Stretch="Uniform"/>
-                            <TextBlock Text="操作" FontSize="12"/>
+                            <TextBlock Text="{local:Language Key=Menu.Operations}" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
@@ -57,7 +59,7 @@
                                         <Path Data="{StaticResource IconPlus}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>创建</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.Create}"/></MenuItem.Header>
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Command="{Binding ApplyVersionCommand}"
@@ -66,7 +68,7 @@
                                         <Path Data="{StaticResource IconAppWindow}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>应用</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.Apply}"/></MenuItem.Header>
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Command="{Binding ExportZipCommand}"
@@ -75,7 +77,7 @@
                                         <Path Data="{StaticResource IconExport}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>导出 ZIP</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.ExportZip}"/></MenuItem.Header>
                                 </MenuItem>
                                 <MenuItem Command="{Binding ExportFolderCommand}"
                                           IsEnabled="{Binding HasSelection}">
@@ -83,7 +85,7 @@
                                         <Path Data="{StaticResource IconFolder}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>导出文件夹</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.ExportFolder}"/></MenuItem.Header>
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Command="{Binding DeleteVersionCommand}"
@@ -92,7 +94,48 @@
                                         <Path Data="{StaticResource IconDelete}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>删除</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.Delete}"/></MenuItem.Header>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6,2,6"
+                               VerticalAlignment="Center"/>
+
+                    <!-- ── 设置 ── -->
+                    <Button Background="Transparent" BorderThickness="0" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Path Data="{StaticResource IconSettings}" Fill="{StaticResource PrimaryText}"
+                                  Width="16" Height="16" Stretch="Uniform"/>
+                            <TextBlock Text="{local:Language Key=Menu.Language}" FontSize="12"/>
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuItem Command="{Binding SetLanguageAutoCommand}">
+                                    <MenuItem.Header>
+                                        <TextBlock Text="{local:Language Key=Menu.LangAuto}"/>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SetLanguageZhCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconCheck}" Fill="{StaticResource AccentBrush}"
+                                              Width="16" Height="16" Stretch="Uniform"
+                                              IsVisible="{Binding Source={x:Static services:LanguageManager.Instance}, Path=IsZh}"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header>
+                                        <TextBlock Text="{local:Language Key=Menu.LangZh}"/>
+                                    </MenuItem.Header>
+                                </MenuItem>
+                                <MenuItem Command="{Binding SetLanguageEnCommand}">
+                                    <MenuItem.Icon>
+                                        <Path Data="{StaticResource IconCheck}" Fill="{StaticResource AccentBrush}"
+                                              Width="16" Height="16" Stretch="Uniform"
+                                              IsVisible="{Binding Source={x:Static services:LanguageManager.Instance}, Path=IsEn}"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem.Header>
+                                        <TextBlock Text="{local:Language Key=Menu.LangEn}"/>
+                                    </MenuItem.Header>
                                 </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
@@ -106,7 +149,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <Path Data="{StaticResource IconInfo}" Fill="{StaticResource PrimaryText}"
                                   Width="16" Height="16" Stretch="Uniform"/>
-                            <TextBlock Text="关于" FontSize="12"/>
+                            <TextBlock Text="{local:Language Key=Menu.About}" FontSize="12"/>
                         </StackPanel>
                         <Button.Flyout>
                             <MenuFlyout>
@@ -115,21 +158,21 @@
                                         <Path Data="{StaticResource IconRefresh}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>检查更新</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.CheckUpdates}"/></MenuItem.Header>
                                 </MenuItem>
                                 <MenuItem Command="{Binding OpenLicenseCommand}">
                                     <MenuItem.Icon>
                                         <Path Data="{StaticResource IconCertificate}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>开源许可</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.License}"/></MenuItem.Header>
                                 </MenuItem>
                                 <MenuItem Command="{Binding SoftwareInfoCommand}">
                                     <MenuItem.Icon>
                                         <Path Data="{StaticResource IconInfo}" Fill="{StaticResource PrimaryText}"
                                               Width="16" Height="16" Stretch="Uniform"/>
                                     </MenuItem.Icon>
-                                    <MenuItem.Header><TextBlock>软件信息</TextBlock></MenuItem.Header>
+                                    <MenuItem.Header><TextBlock Text="{local:Language Key=Menu.SoftwareInfo}"/></MenuItem.Header>
                                 </MenuItem>
                             </MenuFlyout>
                         </Button.Flyout>
@@ -140,7 +183,7 @@
                             IsVisible="{Binding IsLoading}" VerticalAlignment="Center" Margin="0,0,8,0">
                     <ProgressBar IsIndeterminate="True" Width="100" Height="3" Background="#3FFFFFFF"
                                  Foreground="{StaticResource AccentBrush}"/>
-                    <TextBlock Text="处理中..." FontSize="12" Foreground="{StaticResource SecondaryTextBrush}"/>
+                    <TextBlock Text="{local:Language Key=Status.Processing}" FontSize="12" Foreground="{StaticResource SecondaryTextBrush}"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -157,8 +200,8 @@
                     BorderBrush="{StaticResource SubtleBorderBrush}" BorderThickness="1">
                 <DockPanel>
                     <Grid DockPanel.Dock="Top" Margin="16,14,16,8">
-                        <TextBlock Text="快照" FontSize="16" FontWeight="SemiBold"
-                                   Foreground="{StaticResource PrimaryText}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{local:Language Key=Snapshot.Section}" FontSize="16" FontWeight="SemiBold"
+                                    Foreground="{StaticResource PrimaryText}" VerticalAlignment="Center"/>
                     </Grid>
 
                     <ListBox ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion}"
@@ -194,39 +237,39 @@
                 <Grid RowDefinitions="Auto,Auto,*">
                     <DockPanel Grid.Row="0" Margin="0" IsVisible="{Binding HasSelection}">
 
-                        <!-- 信息条: 名称 文件数 大小 创建时间 备注 -->
+                        <!-- 信息条 -->
                         <Border DockPanel.Dock="Top"
                                 Background="{StaticResource ToolbarBackgroundBrush}"
                                 CornerRadius="8,8,0,0" Padding="16,14">
                             <StackPanel Orientation="Horizontal" Spacing="24">
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="名称" FontSize="10"
+                                    <TextBlock Text="{local:Language Key=Field.Name}" FontSize="10"
                                                Foreground="{StaticResource TertiaryTextBrush}"/>
                                     <TextBlock Text="{Binding SelectedVersion.Name}" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{StaticResource PrimaryText}"/>
                                 </StackPanel>
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="文件数" FontSize="10"
+                                    <TextBlock Text="{local:Language Key=Field.Files}" FontSize="10"
                                                Foreground="{StaticResource TertiaryTextBrush}"/>
                                     <TextBlock FontSize="14" Foreground="{StaticResource PrimaryText}">
-                                        <Run Text="{Binding FileCount}"/><Run Text=" 个文件"/>
-                                        <Run Text=", "/><Run Text="{Binding FolderCount}"/><Run Text=" 个目录"/>
+                                        <Run Text="{Binding FileCount}"/><Run Text="{local:Language Key=Field.FilesSuffix}"/>
+                                        <Run Text="{local:Language Key=Field.Separator}"/><Run Text="{Binding FolderCount}"/><Run Text="{local:Language Key=Field.FoldersSuffix}"/>
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="大小" FontSize="10"
+                                    <TextBlock Text="{local:Language Key=Field.Size}" FontSize="10"
                                                Foreground="{StaticResource TertiaryTextBrush}"/>
                                     <TextBlock Text="{Binding TotalSizeFormatted}" FontSize="14"
                                                Foreground="{StaticResource PrimaryText}"/>
                                 </StackPanel>
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="创建时间" FontSize="10"
+                                    <TextBlock Text="{local:Language Key=Field.Created}" FontSize="10"
                                                Foreground="{StaticResource TertiaryTextBrush}"/>
                                     <TextBlock Text="{Binding SelectedVersion.Created, StringFormat='{}{0:G}'}"
                                                FontSize="13" Foreground="{StaticResource PrimaryText}"/>
                                 </StackPanel>
                                 <StackPanel Spacing="2">
-                                    <TextBlock Text="备注" FontSize="10"
+                                    <TextBlock Text="{local:Language Key=Field.Description}" FontSize="10"
                                                Foreground="{StaticResource TertiaryTextBrush}"/>
                                     <TextBlock Text="{Binding SelectedVersion.Desc}"
                                                FontSize="13" Foreground="{StaticResource PrimaryText}"
@@ -247,7 +290,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path Data="{StaticResource IconAppWindow}" Fill="White"
                                           Width="14" Height="14" Stretch="Uniform"/>
-                                    <TextBlock Text="应用" FontSize="12"/>
+                                    <TextBlock Text="{local:Language Key=Action.Apply}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Background="#3FFFFFFF" BorderThickness="0"
@@ -256,7 +299,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path Data="{StaticResource IconExport}" Fill="White"
                                           Width="14" Height="14" Stretch="Uniform"/>
-                                    <TextBlock Text="ZIP" FontSize="12"/>
+                                    <TextBlock Text="{local:Language Key=Action.ZIP}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Background="#3FFFFFFF" BorderThickness="0"
@@ -265,7 +308,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path Data="{StaticResource IconFolder}" Fill="White"
                                           Width="14" Height="14" Stretch="Uniform"/>
-                                    <TextBlock Text="文件夹" FontSize="12"/>
+                                    <TextBlock Text="{local:Language Key=Action.Folder}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                             <Button Background="#44CC6666" BorderThickness="0"
@@ -274,7 +317,7 @@
                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                     <Path Data="{StaticResource IconDelete}" Fill="White"
                                           Width="14" Height="14" Stretch="Uniform"/>
-                                    <TextBlock Text="删除" FontSize="12"/>
+                                    <TextBlock Text="{local:Language Key=Action.Delete}" FontSize="12"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
@@ -304,7 +347,7 @@
                     </TreeView>
 
                     <!-- 未选择时占位 -->
-                    <TextBlock Grid.Row="0" Grid.RowSpan="3" Text="请选择一个快照" FontSize="16"
+                    <TextBlock Grid.Row="0" Grid.RowSpan="3" Text="{local:Language Key=Snapshot.SelectHint}" FontSize="16"
                                Foreground="{StaticResource TertiaryTextBrush}"
                                VerticalAlignment="Center" HorizontalAlignment="Center"
                                IsVisible="{Binding HasSelection, Converter={StaticResource InverseBoolConverter}}"/>
@@ -322,12 +365,12 @@
                 <TextBlock Grid.Column="2" FontSize="12" VerticalAlignment="Center"
                            Foreground="{StaticResource TertiaryTextBrush}" Margin="0,0,16,0"
                            IsVisible="{Binding IsFolderLoaded}">
-                    <Run Text="{Binding Versions.Count}"/><Run Text=" 个快照"/>
+                    <Run Text="{Binding Versions.Count}"/><Run Text="{local:Language Key=Field.SnapshotsSuffix}"/>
                 </TextBlock>
                 <TextBlock Grid.Column="3" FontSize="12" VerticalAlignment="Center"
                            Foreground="{StaticResource TertiaryTextBrush}"
                            IsVisible="{Binding IsFolderLoaded}">
-                    <Run Text="{Binding FileCount}"/><Run Text=" 个文件"/>
+                    <Run Text="{Binding FileCount}"/><Run Text="{local:Language Key=Field.FilesSuffix}"/>
                 </TextBlock>
             </Grid>
         </Border>

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using LiteSnap.App.Services;
 using LiteSnap.App.ViewModels;
 using LiteSnap.App.Views;
 
@@ -15,6 +16,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        _ = LanguageManager.Instance.LoadAsync(
+            LanguageManager.Instance.CurrentLanguage);
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow
