@@ -1,5 +1,6 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:fa="using:FluentAvalonia.Styling"
              x:Class="LiteSnap.App.App"
              xmlns:local="using:LiteSnap.App"
              xmlns:conv="using:LiteSnap.App.Converters"
@@ -39,68 +40,9 @@
     </Application.DataTemplates>
 
     <Application.Styles>
-        <FluentTheme />
-
-        <!-- ── Global Styles ── -->
-        <Style Selector="Button.ToolbarButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{StaticResource PrimaryText}"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-        </Style>
-        <Style Selector="Button.ToolbarButton:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#3FFFFFFF"/>
-            <Setter Property="CornerRadius" Value="4"/>
-        </Style>
-        <Style Selector="Button.ToolbarButton:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#28FFFFFF"/>
-        </Style>
-        <Style Selector="Button.ToolbarButton:disabled">
-            <Setter Property="Opacity" Value="0.35"/>
-        </Style>
-
-        <Style Selector="Button.PrimaryButton">
-            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-        <Style Selector="Button.PrimaryButton:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource AccentDarkBrush}"/>
-        </Style>
-
-        <Style Selector="ListBox.FlatList">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-        </Style>
-        <Style Selector="ListBox.FlatList ListBoxItem">
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="CornerRadius" Value="4"/>
-        </Style>
-        <Style Selector="ListBox.FlatList ListBoxItem:pointerover">
-            <Setter Property="Background" Value="#0FFFFFFF"/>
-        </Style>
-
-        <!-- Accent bar: lights up on selection -->
-        <Style Selector="ListBox.FlatList ListBoxItem:selected Border.AccentBar">
-            <Setter Property="Opacity" Value="1"/>
-        </Style>
-        <Style Selector="ListBox.FlatList ListBoxItem:pointerover Border.AccentBar">
-            <Setter Property="Opacity" Value="0.4"/>
-        </Style>
-        <Style Selector="Border.AccentBar">
-            <Setter Property="Opacity" Value="0"/>
-            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-        </Style>
-
-        <Style Selector="ScrollBar">
-            <Setter Property="Background" Value="Transparent"/>
-        </Style>
+        <fa:FluentAvaloniaTheme
+            PreferSystemTheme="False"
+            PreferUserAccentColor="False"
+            UseSystemFontOnWindows="True" />
     </Application.Styles>
 </Application>
