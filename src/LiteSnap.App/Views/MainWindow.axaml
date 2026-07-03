@@ -17,6 +17,7 @@
         <Border Grid.Row="0" Background="{StaticResource ToolbarBackgroundBrush}">
             <DockPanel Margin="8,4">
                 <StackPanel Orientation="Horizontal" Spacing="2" DockPanel.Dock="Left">
+                    <!-- ═══ 文件 ═══ -->
                     <Button Classes="ToolbarButton" Command="{Binding OpenFolderCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock Text="📂" FontSize="14"/>
@@ -26,6 +27,26 @@
 
                     <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
 
+                    <!-- ═══ 快照操作 ═══ -->
+                    <Button Classes="ToolbarButton" Command="{Binding CreateVersionCommand}"
+                            IsEnabled="{Binding IsFolderLoaded}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="➕" FontSize="14"/>
+                            <TextBlock Text="创建" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Classes="ToolbarButton" Command="{Binding ApplyVersionCommand}"
+                            IsEnabled="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="↩" FontSize="14"/>
+                            <TextBlock Text="应用" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
+
+                    <!-- ═══ 导出 ═══ -->
                     <Button Classes="ToolbarButton" Command="{Binding ExportZipCommand}"
                             IsEnabled="{Binding HasSelection}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -44,22 +65,7 @@
 
                     <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
 
-                    <Button Classes="ToolbarButton" Command="{Binding ApplyVersionCommand}"
-                            IsEnabled="{Binding HasSelection}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="↩" FontSize="14"/>
-                            <TextBlock Text="应用" FontSize="13"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Classes="ToolbarButton" Command="{Binding CreateVersionCommand}"
-                            IsEnabled="{Binding IsFolderLoaded}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="➕" FontSize="14"/>
-                            <TextBlock Text="创建" FontSize="13"/>
-                        </StackPanel>
-                    </Button>
-
+                    <!-- ═══ 危险操作 ═══ -->
                     <Button Classes="ToolbarButton" Command="{Binding DeleteVersionCommand}"
                             IsEnabled="{Binding HasSelection}">
                         <StackPanel Orientation="Horizontal" Spacing="8">

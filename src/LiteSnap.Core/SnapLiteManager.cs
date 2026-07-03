@@ -101,7 +101,7 @@ public class SnapLiteManager : IDisposable
 
     // ── Create ──
 
-    public async Task<string> CreateVersion(string? name = null, string? desc = null)
+    public async Task<string> CreateVersion(string name, string desc)
     {
         var nodeId = Guid.NewGuid().ToString("N");
         var allFiles = await ScanAllFilesAsync();
@@ -125,8 +125,8 @@ public class SnapLiteManager : IDisposable
         {
             NodeId = nodeId,
             Created = DateTime.Now,
-            Name = name ?? DateTime.Now.ToString("yyyy/MM/dd-HH:mm:ss", CultureInfo.InvariantCulture),
-            Desc = desc ?? "由 LiteSnap 创建的备份",
+            Name = name,
+            Desc = desc,
             Version = 1,
         });
 

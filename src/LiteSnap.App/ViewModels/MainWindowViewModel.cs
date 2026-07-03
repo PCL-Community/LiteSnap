@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -8,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FluentAvalonia.UI.Controls;
 using LiteSnap.Core;
 using LiteSnap.Core.Models;
 
@@ -242,11 +242,51 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (_manager is null) return;
 
+        var now = DateTime.Now;
+        var nameBox = new TextBox
+        {
+            PlaceholderText = now.ToString("yyyy/MM/dd-HH:mm:ss"),
+        };
+        var descBox = new TextBox
+        {
+            PlaceholderText = "由 LiteSnap 创建的备份",
+            AcceptsReturn = true,
+            MaxHeight = 80,
+        };
+
+        var dialog = new FAContentDialog
+        {
+            Title = "创建快照",
+            PrimaryButtonText = "创建",
+            CloseButtonText = "取消",
+            DefaultButton = FAContentDialogButton.Primary,
+            Content = new StackPanel
+            {
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock { Text = "名称", FontSize = 12 },
+                    nameBox,
+                    new TextBlock { Text = "描述", FontSize = 12 },
+                    descBox,
+                },
+            },
+        };
+
+        if (await dialog.ShowAsync() != FAContentDialogResult.Primary)
+            return;
+
         try
         {
             IsLoading = true;
             StatusMessage = "正在创建快照...";
-            await Task.Run(() => _manager.CreateVersion());
+            var name = string.IsNullOrWhiteSpace(nameBox.Text)
+                ? now.ToString("yyyy/MM/dd-HH:mm:ss")
+                : nameBox.Text.Trim();
+            var desc = string.IsNullOrWhiteSpace(descBox.Text)
+                ? "由 LiteSnap 创建的备份"
+                : descBox.Text.Trim();
+            await Task.Run(() => _manager.CreateVersion(name, desc));
             StatusMessage = "快照创建成功";
 
             Versions.Clear();
@@ -268,6 +308,19 @@ public partial class MainWindowViewModel : ViewModelBase
     private async Task DeleteVersion()
     {
         if (_manager is null || SelectedVersion is null) return;
+
+        var dialog = new FAContentDialog
+        {
+            Title = "确认删除",
+            Content = $"确定要删除快照 \"{SelectedVersion.Name}\" 吗？此操作不可撤销。",
+            PrimaryButtonText = "删除",
+            CloseButtonText = "取消",
+            DefaultButton = FAContentDialogButton.Close,
+            IsPrimaryButtonEnabled = true,
+        };
+
+        if (await dialog.ShowAsync() != FAContentDialogResult.Primary)
+            return;
 
         try
         {
