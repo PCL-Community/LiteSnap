@@ -1,7 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
@@ -44,12 +52,52 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<VersionData> Versions { get; } = [];
     public ObservableCollection<FileVersionObjects> NodeFiles { get; } = [];
+    public ObservableCollection<string> RecentFolders { get; } = [];
 
     private SnapLiteManager? _manager;
 
     public MainWindowViewModel()
     {
         OnPropertyChanged(nameof(IsFolderLoaded));
+        LoadHistory();
+    }
+
+    public bool HasRecentFolders => RecentFolders.Count > 0;
+
+    private static string HistoryPath =>
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "LiteSnap", "history.json");
+
+    private void LoadHistory()
+    {
+        try
+        {
+            var path = HistoryPath;
+            if (!File.Exists(path)) return;
+            var json = File.ReadAllText(path);
+            var list = JsonSerializer.Deserialize<List<string>>(json);
+            if (list is null) return;
+            RecentFolders.Clear();
+            foreach (var p in list
+                .Select(static x => Path.GetFullPath(x))
+                .Where(static x => Directory.Exists(x)))
+                RecentFolders.Add(p);
+        }
+        catch { }
+        OnPropertyChanged(nameof(HasRecentFolders));
+    }
+
+    private void SaveHistory()
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(HistoryPath)!;
+            Directory.CreateDirectory(dir);
+            var json = JsonSerializer.Serialize(RecentFolders.Take(8).ToList());
+            File.WriteAllText(HistoryPath, json);
+        }
+        catch { }
     }
 
     [RelayCommand]
@@ -97,6 +145,13 @@ public partial class MainWindowViewModel : ViewModelBase
 
             IsFolderLoaded = true;
             StatusMessage = $"已加载 {Versions.Count} 个快照版本";
+
+            RecentFolders.Remove(path);
+            RecentFolders.Insert(0, path);
+            if (RecentFolders.Count > 8)
+                RecentFolders.RemoveAt(RecentFolders.Count - 1);
+            OnPropertyChanged(nameof(HasRecentFolders));
+            SaveHistory();
         }
         catch (Exception ex)
         {
@@ -106,6 +161,21 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenRecentFolder(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return;
+        if (!SnapLiteManager.IsSnapLiteFolder(path))
+        {
+            StatusMessage = "所选文件夹不包含有效的 .litesnap 数据";
+            RecentFolders.Remove(path);
+            OnPropertyChanged(nameof(HasRecentFolders));
+            SaveHistory();
+            return;
+        }
+        await LoadFolder(path);
     }
 
     partial void OnSelectedVersionChanged(VersionData? value)
@@ -342,11 +412,133 @@ public partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    private static readonly HttpClient _httpClient = new()
+    {
+        BaseAddress = new Uri("https://api.github.com/"),
+        DefaultRequestHeaders = { { "User-Agent", "LiteSnap" } },
+    };
+
+    private static string CurrentVersion
+    {
+        get
+        {
+            var v = Assembly.GetExecutingAssembly().GetName().Version;
+            return v is not null ? $"{v.Major}.{v.Minor}.{v.Build}" : "0.0.0";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SoftwareInfo()
+    {
+        var ver = CurrentVersion;
+        await new FAContentDialog
+        {
+            Title = "软件信息",
+            Content = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    new TextBlock { Text = "LiteSnap", FontSize = 20, FontWeight = Avalonia.Media.FontWeight.SemiBold },
+                    new TextBlock { Text = $"版本 v{ver}", FontSize = 13 },
+                    new TextBlock { Text = "快照备份管理器 —— 为 Minecraft 存档及任意文件夹提供文件级快照备份。", FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
+                    new TextBlock { Text = "基于 SHA-512 内容寻址存储 + LiteDB 索引。", FontSize = 12, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 380 },
+                },
+            },
+            PrimaryButtonText = "确定",
+            DefaultButton = FAContentDialogButton.Primary,
+        }.ShowAsync();
+    }
+
+    [RelayCommand]
+    private async Task CheckUpdates()
+    {
+        var spinner = new ProgressBar
+        {
+            IsIndeterminate = true,
+            Height = 4,
+            Margin = new Avalonia.Thickness(0, 4),
+        };
+        var statusText = new TextBlock { Text = "正在检查最新版本...", FontSize = 12 };
+        var resultPanel = new StackPanel { Spacing = 10, Children = { spinner, statusText } };
+
+        var dialog = new FAContentDialog
+        {
+            Title = "检查更新",
+            Content = resultPanel,
+            PrimaryButtonText = "确定",
+            DefaultButton = FAContentDialogButton.Primary,
+        };
+
+        var showTask = dialog.ShowAsync();
+
+        try
+        {
+            var latest = await FetchLatestVersionAsync();
+            var cur = CurrentVersion;
+
+            if (latest is null)
+            {
+                resultPanel.Children[1] = new TextBlock { Text = "检查失败，无法连接到 GitHub。", FontSize = 12 };
+            }
+            else if (string.Compare(latest, cur, StringComparison.OrdinalIgnoreCase) > 0)
+            {
+                resultPanel.Children.Clear();
+                resultPanel.Children.Add(new TextBlock { Text = $"发现新版本：v{latest}", FontSize = 14, FontWeight = Avalonia.Media.FontWeight.SemiBold });
+                resultPanel.Children.Add(new TextBlock { Text = $"当前版本：v{cur}", FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
+                resultPanel.Spacing = 6;
+                dialog.PrimaryButtonText = "跳转下载";
+                dialog.CloseButtonText = "取消";
+            }
+            else
+            {
+                resultPanel.Children.Clear();
+                resultPanel.Children.Add(new TextBlock { Text = "已是最新版本。", FontSize = 14 });
+                resultPanel.Children.Add(new TextBlock { Text = $"v{cur}", FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
+            }
+        }
+        catch
+        {
+            resultPanel.Children[1] = new TextBlock { Text = "检查失败，请检查网络连接。", FontSize = 12 };
+        }
+
+        if (await showTask == FAContentDialogResult.Primary && dialog.PrimaryButtonText == "跳转下载")
+            await OpenUrl("https://github.com/PCL-Community/LiteSnap/releases");
+    }
+
+    [RelayCommand]
+    private async Task OpenLicense()
+    {
+        await OpenUrl("https://github.com/PCL-Community/LiteSnap/blob/main/LICENSE");
+    }
+
+    private static async Task<string?> FetchLatestVersionAsync()
+    {
+        var response = await _httpClient.GetAsync("repos/PCL-Community/LiteSnap/releases/latest");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.GetProperty("tag_name").GetString()?.TrimStart('v');
+    }
+
+    private static async Task OpenUrl(string url)
+    {
+        try
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                Process.Start("xdg-open", url);
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                Process.Start("open", url);
+        }
+        catch { }
+        await Task.CompletedTask;
+    }
+
     private static TopLevel? GetTopLevel()
     {
-        return Avalonia.Application.Current?.ApplicationLifetime is
-            IClassicDesktopStyleApplicationLifetime lifetime
-            ? lifetime.MainWindow
-            : null;
+        return Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime
+            ? lifetime.MainWindow : null;
     }
 }

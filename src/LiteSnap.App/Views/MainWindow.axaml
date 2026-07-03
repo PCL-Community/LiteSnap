@@ -15,63 +15,65 @@
 
         <!-- ══════ CommandBar ══════ -->
         <Border Grid.Row="0" Background="{StaticResource ToolbarBackgroundBrush}">
-            <DockPanel Margin="8,4">
+            <DockPanel Margin="6,4">
                 <StackPanel Orientation="Horizontal" Spacing="2" DockPanel.Dock="Left">
-                    <!-- ═══ 文件 ═══ -->
-                    <Button Classes="ToolbarButton" Command="{Binding OpenFolderCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                    <!-- ── 打开 ── -->
+                    <Button x:Name="OpenMenuButton" Background="Transparent" BorderThickness="0" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Text="📂" FontSize="14"/>
-                            <TextBlock Text="打开" FontSize="13"/>
+                            <TextBlock Text="打开" FontSize="12"/>
                         </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuItem Header="📂 打开文件夹" Command="{Binding OpenFolderCommand}"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
                     </Button>
 
-                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6,2,6"
+                               VerticalAlignment="Center"/>
 
-                    <!-- ═══ 快照操作 ═══ -->
-                    <Button Classes="ToolbarButton" Command="{Binding CreateVersionCommand}"
-                            IsEnabled="{Binding IsFolderLoaded}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="➕" FontSize="14"/>
-                            <TextBlock Text="创建" FontSize="13"/>
+                    <!-- ── 操作 ── -->
+                    <Button Background="Transparent" BorderThickness="0" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="⚙" FontSize="14"/>
+                            <TextBlock Text="操作" FontSize="12"/>
                         </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuItem Header="➕ 创建" Command="{Binding CreateVersionCommand}"
+                                          IsEnabled="{Binding IsFolderLoaded}"/>
+                                <Separator/>
+                                <MenuItem Header="↩ 应用" Command="{Binding ApplyVersionCommand}"
+                                          IsEnabled="{Binding HasSelection}"/>
+                                <Separator/>
+                                <MenuItem Header="📦 导出 ZIP" Command="{Binding ExportZipCommand}"
+                                          IsEnabled="{Binding HasSelection}"/>
+                                <MenuItem Header="📁 导出文件夹" Command="{Binding ExportFolderCommand}"
+                                          IsEnabled="{Binding HasSelection}"/>
+                                <Separator/>
+                                <MenuItem Header="🗑 删除" Command="{Binding DeleteVersionCommand}"
+                                          IsEnabled="{Binding HasSelection}"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
                     </Button>
 
-                    <Button Classes="ToolbarButton" Command="{Binding ApplyVersionCommand}"
-                            IsEnabled="{Binding HasSelection}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="↩" FontSize="14"/>
-                            <TextBlock Text="应用" FontSize="13"/>
+                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6,2,6"
+                               VerticalAlignment="Center"/>
+
+                    <!-- ── 关于 ── -->
+                    <Button Background="Transparent" BorderThickness="0" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="ⓘ" FontSize="14"/>
+                            <TextBlock Text="关于" FontSize="12"/>
                         </StackPanel>
-                    </Button>
-
-                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
-
-                    <!-- ═══ 导出 ═══ -->
-                    <Button Classes="ToolbarButton" Command="{Binding ExportZipCommand}"
-                            IsEnabled="{Binding HasSelection}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="📦" FontSize="14"/>
-                            <TextBlock Text="导出 ZIP" FontSize="13"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Button Classes="ToolbarButton" Command="{Binding ExportFolderCommand}"
-                            IsEnabled="{Binding HasSelection}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="📁" FontSize="14"/>
-                            <TextBlock Text="导出文件夹" FontSize="13"/>
-                        </StackPanel>
-                    </Button>
-
-                    <Rectangle Width="1" Fill="{StaticResource SubtleBorderBrush}" Margin="4,6"/>
-
-                    <!-- ═══ 危险操作 ═══ -->
-                    <Button Classes="ToolbarButton" Command="{Binding DeleteVersionCommand}"
-                            IsEnabled="{Binding HasSelection}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🗑" FontSize="14"/>
-                            <TextBlock Text="删除" FontSize="13"/>
-                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuItem Header="🔄 检查更新" Command="{Binding CheckUpdatesCommand}"/>
+                                <MenuItem Header="📄 开源许可" Command="{Binding OpenLicenseCommand}"/>
+                                <MenuItem Header="ℹ️ 软件信息" Command="{Binding SoftwareInfoCommand}"/>
+                            </MenuFlyout>
+                        </Button.Flyout>
                     </Button>
                 </StackPanel>
 
@@ -130,7 +132,7 @@
             <Border Grid.Column="1" Margin="6,12,12,12" CornerRadius="8"
                     Background="{StaticResource CardBackgroundBrush}"
                     BorderBrush="{StaticResource SubtleBorderBrush}" BorderThickness="1">
-                <Grid RowDefinitions="Auto,*">
+                <Grid RowDefinitions="Auto,Auto,*">
                     <DockPanel Grid.Row="0" Margin="0" IsVisible="{Binding HasSelection}">
 
                         <!-- 信息条: 名称 文件数 大小 创建时间 备注 -->
@@ -176,8 +178,47 @@
 
                     </DockPanel>
 
+                    <!-- ══════ 操作按钮 ══════ -->
+                    <Border Grid.Row="1" BorderBrush="{StaticResource SubtleBorderBrush}"
+                            BorderThickness="0,0,0,1" Padding="14,8" IsVisible="{Binding HasSelection}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Background="{StaticResource AccentBrush}" BorderThickness="0"
+                                    Foreground="White" Padding="12,5" CornerRadius="4"
+                                    Command="{Binding ApplyVersionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="↩" FontSize="12"/>
+                                    <TextBlock Text="应用" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Background="#3FFFFFFF" BorderThickness="0"
+                                    Foreground="White" Padding="12,5" CornerRadius="4"
+                                    Command="{Binding ExportZipCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="📦" FontSize="12"/>
+                                    <TextBlock Text="导出 ZIP" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Background="#3FFFFFFF" BorderThickness="0"
+                                    Foreground="White" Padding="12,5" CornerRadius="4"
+                                    Command="{Binding ExportFolderCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="📁" FontSize="12"/>
+                                    <TextBlock Text="导出文件夹" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Background="#44CC6666" BorderThickness="0"
+                                    Foreground="White" Padding="12,5" CornerRadius="4"
+                                    Command="{Binding DeleteVersionCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🗑" FontSize="12"/>
+                                    <TextBlock Text="删除" FontSize="12"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 文件列表区域 -->
-                    <Grid Grid.Row="1" IsVisible="{Binding HasSelection}"
+                    <Grid Grid.Row="2" IsVisible="{Binding HasSelection}"
                           RowDefinitions="Auto,*" Margin="0">
 
                         <!-- 列头 -->
@@ -224,7 +265,7 @@
                     </Grid>
 
                     <!-- 未选择时占位 -->
-                    <TextBlock Grid.Row="1" Text="请选择一个快照" FontSize="16"
+                    <TextBlock Grid.Row="0" Grid.RowSpan="3" Text="请选择一个快照" FontSize="16"
                                Foreground="{StaticResource TertiaryTextBrush}"
                                VerticalAlignment="Center" HorizontalAlignment="Center"
                                IsVisible="{Binding HasSelection, Converter={StaticResource InverseBoolConverter}}"/>

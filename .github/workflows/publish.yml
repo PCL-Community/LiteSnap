@@ -38,6 +38,7 @@ jobs:
       - name: Publish (${{ matrix.rid }})
         shell: bash
         run: |
+          VERSION="${GITHUB_REF_NAME#v}"
           dotnet publish src/LiteSnap.App \
             --configuration Release \
             --runtime ${{ matrix.rid }} \
@@ -49,6 +50,8 @@ jobs:
             -p:DebugSymbols=false \
             -p:DebugType=None \
             -p:EnableCompressionInSingleFile=true \
+            -p:Version="${VERSION}.0" \
+            -p:InformationalVersion="${VERSION}+${GITHUB_SHA}" \
             -o ./artifacts/${{ matrix.rid }}
 
       - name: Install 7-Zip
