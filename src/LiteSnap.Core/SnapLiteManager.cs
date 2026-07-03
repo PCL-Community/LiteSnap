@@ -226,8 +226,8 @@ public class SnapLiteManager : IDisposable
         foreach (var del in toDelete.OrderByDescending(x => x.Path.Count(c => c == Path.DirectorySeparatorChar))
                      .ThenBy(x => (int)x.ObjectType))
         {
-            var fullPath = SafeResolvePath(del.Path);
-            if (fullPath is null) continue;
+            var fullPath = Path.GetFullPath(Path.Combine(_rootPath, del.Path));
+            if (!Files.IsDirectoryWithinRoot(fullPath, _rootPath)) continue;
             if (del.ObjectType == ObjectType.File && File.Exists(fullPath))
                 File.Delete(fullPath);
             else if (del.ObjectType == ObjectType.Directory && Directory.Exists(fullPath))
@@ -236,8 +236,8 @@ public class SnapLiteManager : IDisposable
 
         foreach (var add in toAdd.OrderBy(x => (int)x.ObjectType))
         {
-            var fullPath = SafeResolvePath(add.Path);
-            if (fullPath is null) continue;
+            var fullPath = Path.GetFullPath(Path.Combine(_rootPath, add.Path));
+            if (!Files.IsDirectoryWithinRoot(fullPath, _rootPath)) continue;
             if (add.ObjectType == ObjectType.Directory)
             {
                 Directory.CreateDirectory(fullPath);
@@ -257,8 +257,8 @@ public class SnapLiteManager : IDisposable
 
         foreach (var upd in toUpdate)
         {
-            var fullPath = SafeResolvePath(upd.Path);
-            if (fullPath is null) continue;
+            var fullPath = Path.GetFullPath(Path.Combine(_rootPath, upd.Path));
+            if (!Files.IsDirectoryWithinRoot(fullPath, _rootPath)) continue;
             if (File.Exists(fullPath) || Directory.Exists(fullPath))
             {
                 File.SetCreationTime(fullPath, upd.CreationTime);
@@ -399,15 +399,6 @@ public class SnapLiteManager : IDisposable
     // ── Internal ──
 
     private static string GetNodeTableName(string nodeId) => $"node_{nodeId}";
-
-    private string? SafeResolvePath(string relativePath)
-    {
-        var full = Path.GetFullPath(Path.Combine(_rootPath, relativePath));
-        var root = Path.GetFullPath(_rootPath);
-        if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase))
-            return null;
-        return full;
-    }
 
     public void Dispose()
     {
