@@ -11,6 +11,7 @@
             <!-- ── Converters ── -->
             <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
             <conv:FileSizeConverter x:Key="FileSizeConverter"/>
+            <conv:BoolToIconConverter x:Key="BoolToIconConverter"/>
 
             <!-- ── Core Colors ── -->
             <Color x:Key="AccentColor">#60CDE0</Color>
@@ -42,6 +43,7 @@
             <StreamGeometry x:Key="IconPlus">M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z</StreamGeometry>
             <StreamGeometry x:Key="IconAppWindow">M15 9H5V5h10m-3 14a3 3 0 0 1-3-3a3 3 0 0 1 3-3a3 3 0 0 1 3 3a3 3 0 0 1-3 3m5-16H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7z</StreamGeometry>
             <StreamGeometry x:Key="IconExport">M1 7h2v14h14v2H3a2 2 0 0 1-2-2zm18-6H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V5zm2 16H7V3h11.17L21 5.83zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3s3-1.34 3-3s-1.34-3-3-3M8 4h9v4H8z</StreamGeometry>
+            <StreamGeometry x:Key="IconFile">M13 9V3.5L18.5 9M6 2c-1.11 0-2 .89-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z</StreamGeometry>
             <StreamGeometry x:Key="IconDelete">M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z</StreamGeometry>
         </ResourceDictionary>
     </Application.Resources>

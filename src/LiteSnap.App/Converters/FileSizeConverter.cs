@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
-using LiteSnap.Core.Models;
 
 namespace LiteSnap.App.Converters;
 
@@ -9,18 +8,15 @@ public class FileSizeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is not FileVersionObjects f)
-            return null;
+        if (value is not long length) return null;
+        if (length == 0) return "—";
 
-        if (f.ObjectType == ObjectType.Directory)
-            return "—";
-
-        return f.Length switch
+        return length switch
         {
-            < 1024 => $"{f.Length} B",
-            < 1024 * 1024 => $"{f.Length / 1024.0:F1} KB",
-            < 1024L * 1024 * 1024 => $"{f.Length / (1024.0 * 1024):F1} MB",
-            _ => $"{f.Length / (1024.0 * 1024 * 1024):F2} GB",
+            < 1024 => $"{length} B",
+            < 1024 * 1024 => $"{length / 1024.0:F1} KB",
+            < 1024L * 1024 * 1024 => $"{length / (1024.0 * 1024):F1} MB",
+            _ => $"{length / (1024.0 * 1024 * 1024):F2} GB",
         };
     }
 

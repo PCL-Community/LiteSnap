@@ -52,6 +52,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<VersionData> Versions { get; } = [];
     public ObservableCollection<FileVersionObjects> NodeFiles { get; } = [];
+    public ObservableCollection<FileTreeNode> FileTreeRoot { get; } = [];
     public ObservableCollection<string> RecentFolders { get; } = [];
 
     private SnapLiteManager? _manager;
@@ -129,6 +130,7 @@ public partial class MainWindowViewModel : ViewModelBase
         IsLoading = true;
         Versions.Clear();
         NodeFiles.Clear();
+        FileTreeRoot.Clear();
         SelectedVersion = null;
         HasSelection = false;
         IsFolderLoaded = false;
@@ -181,6 +183,7 @@ public partial class MainWindowViewModel : ViewModelBase
     partial void OnSelectedVersionChanged(VersionData? value)
     {
         NodeFiles.Clear();
+        FileTreeRoot.Clear();
         HasSelection = value is not null;
         FileCount = 0;
         FolderCount = 0;
@@ -191,15 +194,58 @@ public partial class MainWindowViewModel : ViewModelBase
         try
         {
             var files = _manager.GetNodeObjects(value.NodeId);
-            if (files is not null)
-            {
-                foreach (var f in files.OrderBy(x => x.Path))
-                    NodeFiles.Add(f);
+            if (files is null) return;
 
-                FileCount = files.Count(x => x.ObjectType == ObjectType.File);
-                FolderCount = files.Count(x => x.ObjectType == ObjectType.Directory);
-                var totalBytes = files.Where(x => x.ObjectType == ObjectType.File).Sum(x => x.Length);
-                TotalSizeFormatted = FormatSize(totalBytes);
+            foreach (var f in files.OrderBy(x => x.Path))
+                NodeFiles.Add(f);
+
+            FileCount = files.Count(x => x.ObjectType == ObjectType.File);
+            FolderCount = files.Count(x => x.ObjectType == ObjectType.Directory);
+            var totalBytes = files.Where(x => x.ObjectType == ObjectType.File).Sum(x => x.Length);
+            TotalSizeFormatted = FormatSize(totalBytes);
+
+            // Build tree
+            var dirs = new Dictionary<string, FileTreeNode>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in files.OrderBy(x => x.Path))
+            {
+                var segments = f.Path.Split('/', '\\');
+                var currentPath = "";
+
+                for (int i = 0; i < segments.Length - 1; i++)
+                {
+                    var parentPath = currentPath;
+                    currentPath = currentPath.Length == 0 ? segments[i] : currentPath + "/" + segments[i];
+                    if (!dirs.ContainsKey(currentPath))
+                    {
+                        var node = new FileTreeNode
+                        {
+                            Name = segments[i],
+                            FullPath = currentPath,
+                            IsDirectory = true,
+                        };
+                        dirs[currentPath] = node;
+                        if (parentPath.Length == 0)
+                            FileTreeRoot.Add(node);
+                        else if (dirs.TryGetValue(parentPath, out var parent))
+                            parent.Children.Add(node);
+                    }
+                }
+
+                var node2 = new FileTreeNode
+                {
+                    Name = segments[^1],
+                    FullPath = f.Path,
+                    IsDirectory = f.ObjectType == ObjectType.Directory,
+                    Length = f.Length,
+                };
+                if (segments.Length == 1)
+                    FileTreeRoot.Add(node2);
+                else
+                {
+                    var parentDir = string.Join("/", segments[..^1]);
+                    if (dirs.TryGetValue(parentDir, out var parent2))
+                        parent2.Children.Add(node2);
+                }
             }
         }
         catch (Exception ex)
@@ -541,4 +587,14 @@ public partial class MainWindowViewModel : ViewModelBase
         return Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime
             ? lifetime.MainWindow : null;
     }
+}
+
+public class FileTreeNode
+{
+    public string Name { get; set; } = string.Empty;
+    public string FullPath { get; set; } = string.Empty;
+    public bool IsDirectory { get; set; }
+    public long Length { get; set; }
+    public ObservableCollection<FileTreeNode> Children { get; set; } = [];
+    public bool IsExpanded { get; set; } = true;
 }
