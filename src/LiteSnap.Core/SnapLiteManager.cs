@@ -56,10 +56,20 @@ public class SnapLiteManager : IDisposable
 
     // ── Read ──
 
-    public List<VersionData> GetVersions()
+    private ILiteQueryable<VersionData> GetVersionsQuery()
     {
         var nodeList = _database.GetCollection<VersionData>(DatabaseIndexTableName);
-        return nodeList.Query().OrderByDescending(x => x.Created).ToList();
+        return nodeList.Query().OrderByDescending(x => x.Created);
+    }
+
+    public List<VersionData> GetVersions()
+    {
+        return GetVersionsQuery().ToList();
+    }
+
+    public IEnumerable<VersionData> GetVersionsEnumerable()
+    {
+        return GetVersionsQuery().ToEnumerable();
     }
 
     public VersionData? GetVersion(string nodeId)
@@ -68,10 +78,20 @@ public class SnapLiteManager : IDisposable
         return nodeList.FindOne(x => x.NodeId == nodeId);
     }
 
-    public List<FileVersionObjects>? GetNodeObjects(string nodeId)
+    private ILiteQueryable<FileVersionObjects>? GetNodeObjectsQuery(string nodeId)
     {
         var objectList = _database.GetCollection<FileVersionObjects>(GetNodeTableName(nodeId));
-        return objectList?.Query().ToList();
+        return objectList?.Query();
+    }
+
+    public List<FileVersionObjects>? GetNodeObjects(string nodeId)
+    {
+        return GetNodeObjectsQuery(nodeId)?.ToList();
+    }
+
+    public IEnumerable<FileVersionObjects>? GetNodeObjectsEnumerable(string nodeId)
+    {
+        return GetNodeObjectsQuery(nodeId)?.ToEnumerable();
     }
 
     public Stream? GetObjectContent(string objectHash)
