@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: LiteSnap Discussion
+    url: https://github.com/anomalyco/LiteSnap/discussions
+    about: 提问或讨论功能想法，请使用 Discussions
