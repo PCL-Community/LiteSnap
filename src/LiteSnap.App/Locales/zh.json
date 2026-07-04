@@ -45,6 +45,7 @@
   "Dialog.DeleteConfirmBody": "确定要删除快照 \"{0}\" 吗？此操作不可撤销。",
   "Dialog.OK": "确定",
   "Dialog.SoftwareInfo": "软件信息",
+  "Dialog.Close": "关闭",
 
   "Update.Checking": "正在检查最新版本...",
   "Update.CheckFailed": "检查失败，无法连接到 GitHub。",

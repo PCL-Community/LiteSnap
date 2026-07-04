@@ -45,6 +45,7 @@
   "Dialog.DeleteConfirmBody": "Are you sure you want to delete snapshot \"{0}\"? This action cannot be undone.",
   "Dialog.OK": "OK",
   "Dialog.SoftwareInfo": "About",
+  "Dialog.Close": "Close",
 
   "Update.Checking": "Checking for updates...",
   "Update.CheckFailed": "Check failed, unable to reach GitHub.",

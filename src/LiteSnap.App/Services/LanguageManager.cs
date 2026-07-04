@@ -1,10 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia.Platform;
 
 namespace LiteSnap.App.Services;
 
@@ -50,33 +50,21 @@ public class LanguageManager : INotifyPropertyChanged
 
     public async Task LoadAsync(string lang)
     {
-        var asm = Assembly.GetExecutingAssembly();
-        var name = asm.GetManifestResourceNames()
-            .FirstOrDefault(n => n.EndsWith($"Locales.{lang}.json"));
-
-        if (name is null)
+        try
+        {
+            var uri = new Uri($"avares://LiteSnap.App/Locales/{lang}.json");
+            using var stream = AssetLoader.Open(uri);
+            using var reader = new StreamReader(stream);
+            var json = await reader.ReadToEndAsync();
+            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            _strings = data ?? [];
+            _resolved = lang;
+        }
+        catch
         {
             _strings = [];
-            PropertyChanged?.Invoke(this, new("Item"));
-            PropertyChanged?.Invoke(this, new("Item[]"));
-            return;
         }
 
-        await using var stream = asm.GetManifestResourceStream(name);
-        if (stream is null)
-        {
-            _strings = [];
-            PropertyChanged?.Invoke(this, new("Item"));
-            PropertyChanged?.Invoke(this, new("Item[]"));
-            return;
-        }
-
-        using var reader = new StreamReader(stream);
-        var json = await reader.ReadToEndAsync();
-        var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-        _strings = data ?? [];
-
-        _resolved = lang;
         PropertyChanged?.Invoke(this, new(nameof(CurrentLanguage)));
         PropertyChanged?.Invoke(this, new("Item"));
         PropertyChanged?.Invoke(this, new("Item[]"));

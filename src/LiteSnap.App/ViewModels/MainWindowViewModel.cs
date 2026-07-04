@@ -502,7 +502,7 @@ public partial class MainWindowViewModel : ViewModelBase
                 resultPanel.Children.Add(new TextBlock { Text = Lang.Format("Update.CurrentVersion", cur), FontSize = 12, Foreground = Avalonia.Media.Brushes.Gray });
                 resultPanel.Spacing = 6;
                 dialog.PrimaryButtonText = Lang["Update.JumpDownload"];
-                dialog.CloseButtonText = Lang["Dialog.Cancel"];
+                dialog.CloseButtonText = Lang["Dialog.Close"];
             }
             else
             {
