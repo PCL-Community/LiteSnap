@@ -2,8 +2,9 @@
 name: Bug Report
 about: 报告一个 Bug 帮助我们改进
 title: '[Bug] '
-labels: bug
+labels: 状态/等待初步审核
 assignees: ''
+type: Bug
 ---
 
 ## 描述问题

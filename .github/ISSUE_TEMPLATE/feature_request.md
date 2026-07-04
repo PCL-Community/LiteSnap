@@ -2,8 +2,9 @@
 name: Feature Request
 about: 提议一个新功能或改进
 title: '[Feature] '
-labels: enhancement
+labels: 状态/等待初步审核
 assignees: ''
+type: 新功能
 ---
 
 ## 问题描述
