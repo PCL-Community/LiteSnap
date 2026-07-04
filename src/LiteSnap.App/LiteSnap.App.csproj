@@ -15,6 +15,11 @@
     <AvaloniaResource Include="Locales\**" />
   </ItemGroup>
 
+  <!-- Preserve all app code from trimming: LanguageManager loads Locales via AssetLoader.Open at runtime -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="LiteSnap.App" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.5" />
     <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />

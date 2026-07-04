@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using LiteSnap.App.ViewModels;
@@ -8,6 +9,7 @@ namespace LiteSnap.App;
 public class ViewLocator : IDataTemplate
 {
 
+    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "View-for-ViewModel convention is a runtime pattern")]
     public Control? Build(object? param)
     {
         if (param is null)

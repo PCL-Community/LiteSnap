@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Platform;
@@ -54,10 +53,13 @@ public class LanguageManager : INotifyPropertyChanged
         {
             var uri = new Uri($"avares://LiteSnap.App/Locales/{lang}.json");
             using var stream = AssetLoader.Open(uri);
-            using var reader = new StreamReader(stream);
-            var json = await reader.ReadToEndAsync();
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-            _strings = data ?? [];
+            using var doc = await JsonDocument.ParseAsync(stream);
+            var dict = new Dictionary<string, string>();
+            foreach (var prop in doc.RootElement.EnumerateObject())
+            {
+                dict[prop.Name] = prop.Value.GetString() ?? "";
+            }
+            _strings = dict;
             _resolved = lang;
         }
         catch

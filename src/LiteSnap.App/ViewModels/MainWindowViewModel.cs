@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -81,7 +82,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var path = HistoryPath;
             if (!File.Exists(path)) return;
             var json = File.ReadAllText(path);
-            var list = JsonSerializer.Deserialize<List<string>>(json);
+            var list = JsonSerializer.Deserialize(json, AppJsonContext.Default.ListString);
             if (list is null) return;
             RecentFolders.Clear();
             foreach (var p in list
@@ -99,7 +100,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             var dir = Path.GetDirectoryName(HistoryPath)!;
             Directory.CreateDirectory(dir);
-            var json = JsonSerializer.Serialize(RecentFolders.Take(8).ToList());
+            var json = JsonSerializer.Serialize(RecentFolders.Take(8).ToList(), AppJsonContext.Default.ListString);
             File.WriteAllText(HistoryPath, json);
         }
         catch { }
@@ -560,5 +561,8 @@ public partial class MainWindowViewModel : ViewModelBase
             ? lifetime.MainWindow : null;
     }
 }
+
+[JsonSerializable(typeof(List<string>))]
+internal partial class AppJsonContext : JsonSerializerContext { }
 
 
