@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -49,12 +50,11 @@ public class LanguageManager : INotifyPropertyChanged
 
     public async Task LoadAsync(string lang)
     {
-        var baseDir = Path.GetDirectoryName(typeof(LanguageManager).Assembly.Location)!;
-        var path = Path.Combine(baseDir, "Locales", $"{lang}.json");
-        if (!File.Exists(path))
-            path = Path.Combine(baseDir, "Locales", $"{lang}.json");
+        var asm = Assembly.GetExecutingAssembly();
+        var name = asm.GetManifestResourceNames()
+            .FirstOrDefault(n => n.EndsWith($"Locales.{lang}.json"));
 
-        if (!File.Exists(path))
+        if (name is null)
         {
             _strings = [];
             PropertyChanged?.Invoke(this, new("Item"));
@@ -62,7 +62,17 @@ public class LanguageManager : INotifyPropertyChanged
             return;
         }
 
-        var json = await File.ReadAllTextAsync(path);
+        await using var stream = asm.GetManifestResourceStream(name);
+        if (stream is null)
+        {
+            _strings = [];
+            PropertyChanged?.Invoke(this, new("Item"));
+            PropertyChanged?.Invoke(this, new("Item[]"));
+            return;
+        }
+
+        using var reader = new StreamReader(stream);
+        var json = await reader.ReadToEndAsync();
         var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
         _strings = data ?? [];
 
