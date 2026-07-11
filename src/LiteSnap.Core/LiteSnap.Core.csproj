@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CopyOnWrite" Version="0.5.0" />
     <PackageReference Include="LiteDB" Version="5.0.21" />
   </ItemGroup>
 

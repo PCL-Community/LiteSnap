@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Microsoft.CopyOnWrite;
 
 namespace LiteSnap.Core.IO;
 
@@ -6,6 +7,7 @@ public class HashStorage
 {
     private readonly string _folder;
     private readonly int _prefixLength;
+    private readonly ICopyOnWriteFilesystem _cow = CopyOnWriteFilesystemFactory.GetInstance();
 
     public HashStorage(string folder, int prefixLength = 2)
     {
@@ -46,6 +48,17 @@ public class HashStorage
             Directory.CreateDirectory(dir);
 
         if (File.Exists(destPath)) return;
+
+        var canClone = _cow.CopyOnWriteLinkSupportedBetweenPaths(sourcePath, destPath);
+        if (canClone)
+        {
+            try
+            {
+                _cow.CloneFile(sourcePath, destPath);
+                return;
+            }
+            catch (MaxCloneFileLinksExceededException) { /* Continue for normal copy */ }
+        }
 
         await using var fs = File.OpenRead(sourcePath);
         await PutAsync(fs, hash);
